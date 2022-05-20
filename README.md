@@ -1,0 +1,1 @@
+CLI interface for otlet, the PyPI Web API wrapper
