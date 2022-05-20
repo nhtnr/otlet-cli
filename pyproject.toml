@@ -10,7 +10,7 @@ python = "^3.7"
 otlet = "^0.6.0"
 
 [tool.poetry.scripts]
-otlet = "otlet-cli.cli:run_cli"
+otlet = "otlet_cli.cli:run_cli"
 
 [tool.poetry.dev-dependencies]
 
