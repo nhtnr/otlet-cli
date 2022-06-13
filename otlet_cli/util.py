@@ -1,4 +1,5 @@
 import os
+import sys
 import textwrap
 import argparse
 from typing import Optional
@@ -37,19 +38,19 @@ def print_releases(args: Optional[argparse.Namespace] = None):
             text += "\u001b[1m\u001b[33m (yanked)\u001b[0m"
         print(text)
 
-    raise SystemExit(0)
+    return 0
 
 
 def print_urls(package: str):
     pkg = api.get_package(package)
     if pkg.info.project_urls is None:
         print(f"No URLs available for {pkg.release_name}")
-        raise SystemExit(0)
+        return 0
 
     for _type, url in pkg.info.project_urls.__dict__.items():
         print(f"{_type}: {url}")
 
-    raise SystemExit(0)
+    return 0
 
 
 def print_vulns(package: str, version: str):
@@ -60,7 +61,7 @@ def print_vulns(package: str, version: str):
 
     if pkg.vulnerabilities is None:
         print("No vulnerabilities found for this release! :)")
-        raise SystemExit(0)
+        return 0
 
     os.system("clear" if os.name != "nt" else "cls")
     print(
@@ -86,7 +87,7 @@ def print_vulns(package: str, version: str):
         input("== Press ENTER for next page ==")
         os.system("clear" if os.name != "nt" else "cls")
 
-    raise SystemExit(0)
+    return 0
 
 
 def download_dist(

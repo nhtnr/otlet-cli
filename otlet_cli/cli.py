@@ -28,19 +28,20 @@ import os
 import sys
 import signal
 import textwrap
+from argparse import Namespace
+from typing import Optional
 from otlet import api, exceptions
 from . import util, __version__
 from .options import OtletArgumentParser
 
 
-def init_args():
+def init_args() -> Optional[Namespace]:
     parser = OtletArgumentParser()
 
     args = parser.parse_args()
     if not args.package:
-        raise SystemExit(
-            "Please supply a package to search for: i.e. 'otlet sampleproject'"
-        )
+        print("Please supply a package to search for: i.e. 'otlet sampleproject'", file=sys.stderr)
+        return None
     if parser.__dict__.get("subparsers"):
         args.__dict__["subparsers"] = []
         for s in parser.__dict__.get("subparsers").choices:
@@ -58,18 +59,20 @@ def main():
         signal.SIGINT, lambda *_: (_ for _ in ()).throw(SystemExit(0))
     )  # no yucky exception on KeyboardInterrupt (^C)
     args = init_args()
+    if not args: 
+        return 1
 
     if args.subparsers:
         if "releases" in sys.argv:
-            util.print_releases(args)
+            return util.print_releases(args)
         if "download" in sys.argv:
             return util.download_dist(
                 args.package[0], args.package_version, args.dist_type, args.dest
             )
     if args.urls:
-        util.print_urls(args.package[0])
+        return util.print_urls(args.package[0])
     if args.vulnerabilities:
-        util.print_vulns(args.package[0], args.package_version)
+        return util.print_vulns(args.package[0], args.package_version)
 
     try:
         if args.package_version != "stable":
@@ -77,7 +80,8 @@ def main():
         else:
             pkg = api.get_package(args.package[0])
     except exceptions.PyPIAPIError as err:
-        raise SystemExit(f"{args.package[0]}: " + err.__str__())
+        print(f"{args.package[0]}: " + err.__str__(), file=sys.stderr)
+        return 1
 
     indent_chars = "\n\t\t"
     msg = textwrap.dedent(
@@ -100,9 +104,9 @@ def main():
     if pkg.info.yanked:
         msg += f"\u001b[1m\u001b[33m\n== NOTE ==\u001b[0m\nThis version has been yanked from PyPI.\n\t Reason: '{pkg.info.yanked_reason}'\n"
     print(msg)
-    raise SystemExit(0)
+    return 0
 
 
 def run_cli():
     code = main()
-    raise SystemExit(not code)
+    raise SystemExit(code)
