@@ -40,7 +40,10 @@ def init_args() -> Optional[Namespace]:
 
     args = parser.parse_args()
     if not args.package:
-        print("Please supply a package to search for: i.e. 'otlet sampleproject'", file=sys.stderr)
+        print(
+            "Please supply a package to search for: i.e. 'otlet sampleproject'",
+            file=sys.stderr,
+        )
         return None
     if parser.__dict__.get("subparsers"):
         args.__dict__["subparsers"] = []
@@ -59,7 +62,7 @@ def main():
         signal.SIGINT, lambda *_: (_ for _ in ()).throw(SystemExit(0))
     )  # no yucky exception on KeyboardInterrupt (^C)
     args = init_args()
-    if not args: 
+    if not args:
         return 1
 
     if args.subparsers:

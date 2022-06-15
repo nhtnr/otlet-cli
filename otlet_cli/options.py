@@ -10,7 +10,7 @@ elif "download" in sys.argv:
 else:
     ARGUMENT_LIST["package"] = PACKAGE_ARGUMENT
     ARGUMENT_LIST["package_version"] = PACKAGE_VERSION_ARGUMENT
-        
+
 
 class OtletArgumentParser(ArgumentParser):
     def __init__(self):

@@ -92,6 +92,7 @@ def print_vulns(package: str, version: str):
 
     return 0
 
+
 def _download(url: str, dest: Union[str, BinaryIO]) -> Tuple[int, Optional[str]]:
     """Download a binary file from a given URL. Do not use this function directly."""
     # download file and store bytes
