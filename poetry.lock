@@ -1,7 +1,7 @@
 [[package]]
 name = "otlet"
-version = "0.6.0"
-description = "CLI tool and wrapper for PyPI JSON Web API"
+version = "1.0.0a1"
+description = "Zero-dependency, pure-python wrapper for the PyPI JSON Web API"
 category = "main"
 optional = false
 python-versions = ">=3.7,<4.0"
@@ -12,10 +12,10 @@ docs = ["Sphinx (>=4.5.0,<5.0.0)", "sphinx-rtd-theme (>=1.0.0,<2.0.0)"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "15e1b414a221057f2274d741b416bd2c0ac36dd78133e3f4a03d3c2fe29c9e82"
+content-hash = "885a60039425970a6fad314fbb31b16ef87469399650e17eca457a3f37c2e57f"
 
 [metadata.files]
 otlet = [
-    {file = "otlet-0.6.0-py3-none-any.whl", hash = "sha256:609b1e31c6aa3551e253b5213442f572a31c747a93bab4fe3d14961b826b9437"},
-    {file = "otlet-0.6.0.tar.gz", hash = "sha256:0533535389cdb0a2beae7585ac327c3015f485030a3f62fdc4b11d57a9edcd20"},
+    {file = "otlet-1.0.0a1-py3-none-any.whl", hash = "sha256:e1b54b94dad0bebccf3187a094cd3a12f91f46ccd3c7c34328d16f5dff42c37c"},
+    {file = "otlet-1.0.0a1.tar.gz", hash = "sha256:7ee4704a813f5eb2532a6c4775c4ad675b0acf4f56a6d61370ae8e1bfc6596e4"},
 ]

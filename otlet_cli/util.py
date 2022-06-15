@@ -1,9 +1,12 @@
 import os
-import sys
 import textwrap
 import argparse
-from typing import Optional
+from urllib.request import urlopen
+from typing import Optional, BinaryIO, Tuple, Union
+from io import BufferedWriter
 from otlet import api
+from otlet.exceptions import *
+from otlet.api import PackageObject
 
 
 def print_releases(args: Optional[argparse.Namespace] = None):
@@ -89,19 +92,83 @@ def print_vulns(package: str, version: str):
 
     return 0
 
+def _download(url: str, dest: Union[str, BinaryIO]) -> Tuple[int, Optional[str]]:
+    """Download a binary file from a given URL. Do not use this function directly."""
+    # download file and store bytes
+    request_obj = urlopen(url)
+    data = request_obj.read()
+
+    # enforce that we downloaded the correct file, and no corruption took place
+    from hashlib import md5
+
+    data_hash = md5(data).hexdigest()
+    cloud_hash = request_obj.headers["ETag"].strip('"')
+    if data_hash != cloud_hash:
+        raise HashDigestMatchError(
+            data_hash,
+            cloud_hash,
+            f'Hashes do not match. (data_hash ("{data_hash}") != cloud_hash ("{cloud_hash}")',
+        )
+
+    # write bytes to destination and return
+    bw = 0
+    if isinstance(dest, str):
+        dest = open(dest, "wb")
+    with dest as f:
+        bw = f.write(data)
+    return bw, dest.name
+
 
 def download_dist(
-    package_name: str,
-    package_version: str,
-    dist_type: Optional[str] = None,
-    dest: Optional[str] = None,
-):
-    """Frontend for otlet.api.download_dist()"""
-    if package_version == "stable":
-        package_version = None # type: ignore
-    if dist_type == None:
-        dist_type = "bdist_wheel"
-    return api.download_dist(package_name, package_version, dist_type, dest) # type: ignore
+    package: str,
+    release: Optional[str] = None,
+    dist_type: str = "bdist_wheel",
+    dest: Optional[Union[str, BinaryIO]] = None,
+) -> bool:
+    """
+    Download a specified package's distribution file.
+
+    :param package: Name of desired package to download
+    :type package: str
+
+    :param release: Version of package to download (Default: stable)
+    :type release: Optional[str]
+
+    :param dist_type: Type of distribution to download (Default: bdist_wheel)
+    :type dist_type: str
+
+    :param dest: Destination for downloaded output file (Default: current directory with original filename)
+    :type dest: Optional[Union[str, BinaryIO]]
+    """
+    if (
+        isinstance(dest, BufferedWriter) and dest.mode != "wb"
+    ):  # enforce BufferedWriter is in binary mode
+        print("If using BufferedWriter for dest, ensure it is opened in 'wb' mode.")
+        return False
+
+    # search for package on PyPI
+    try:
+        pkg = PackageObject(package, release)
+    except (PyPIPackageNotFound, PyPIPackageVersionNotFound) as e:
+        print(e.__str__())
+        return False
+
+    # search for requested distribution type in pkg.urls
+    # and download distribution
+    success = False
+    for url in pkg.urls:
+        if url.packagetype == dist_type:
+            if dest is None:
+                dest = url.filename
+            s, f = _download(url.url, dest)
+            print("Wrote", s, "bytes to", f)
+            success = True
+            break
+    if not success:
+        print(
+            f'Distribution type "{dist_type}" not available for this version of "{package}".'
+        )
+    return success
 
 
 __all__ = ["print_releases", "print_urls", "print_vulns"]

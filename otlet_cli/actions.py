@@ -27,20 +27,20 @@ class OtletVersionAction(Action):
             if os.environ.get("TERM") == "xterm-256color"
             else "\u001b[37m"
         )
-        CYAN = (
-            "\u001b[38;5;153m"
+        ART_COLOR = (
+            "\u001b[38;5;120m" # light green
             if os.environ.get("TERM") == "xterm-256color"
-            else "\u001b[36m"
+            else "\u001b[32m"
         )
         parser._print_message(
             textwrap.dedent(
                 f"""
-                        {CYAN}°º¤ø,¸¸,ø¤º°`°º¤ø,¸,ø¤°º¤ø,¸¸,ø¤º°`°º¤ø,¸
+                        {ART_COLOR}°º¤ø,¸¸,ø¤º°`°º¤ø,¸,ø¤°º¤ø,¸¸,ø¤º°`°º¤ø,¸
 
                         {WHITE}otlet v{self.version}
                         {WHITE}(c) 2022-present Noah Tanner, released under the terms of the MIT License
 
-                        {CYAN}°º¤ø,¸¸,ø¤º°`°º¤ø,¸,ø¤°º¤ø,¸¸,ø¤º°`°º¤ø,¸ \u001b[0m\n
+                        {ART_COLOR}°º¤ø,¸¸,ø¤º°`°º¤ø,¸,ø¤°º¤ø,¸¸,ø¤º°`°º¤ø,¸ \u001b[0m\n
                 """  # ascii art sourced from http://1lineart.kulaone.com
             ),
             sys.stdout

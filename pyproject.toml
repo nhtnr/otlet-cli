@@ -1,13 +1,13 @@
 [tool.poetry]
 name = "otlet-cli"
-version = "0.7.0"
+version = "1.0.0rc1"
 description = "CLI interface for otlet, the PyPI Web API wrapper"
 authors = ["Noah Tanner (nhtnr) <noahtnr@gmail.com>"]
 license = "MIT"
 
 [tool.poetry.dependencies]
 python = "^3.7"
-otlet = "^0.6.0"
+otlet = "^1.0.0a1"
 
 [tool.poetry.scripts]
 otlet = "otlet_cli.cli:run_cli"
