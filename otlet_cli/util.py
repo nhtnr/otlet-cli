@@ -4,7 +4,7 @@ import argparse
 from urllib.request import urlopen
 from typing import Optional, BinaryIO, Tuple, Union
 from io import BufferedWriter
-from otlet import api
+#from otlet import api
 from otlet.exceptions import *
 from otlet.api import PackageObject
 
@@ -28,7 +28,7 @@ def print_releases(args: Optional[argparse.Namespace] = None):
     if args and args.before_date:
         _top_date = datetime.fromisoformat(args.before_date[0] + "T23:59:59")
 
-    pkg = api.get_package(package)
+    pkg = PackageObject(package)
     for rel, obj in pkg.releases.items():
         if _top_version < rel or _bottom_version > rel:
             continue
@@ -45,12 +45,12 @@ def print_releases(args: Optional[argparse.Namespace] = None):
 
 
 def print_urls(package: str):
-    pkg = api.get_package(package)
+    pkg = PackageObject(package)
     if pkg.info.project_urls is None:
         print(f"No URLs available for {pkg.release_name}")
         return 0
 
-    for _type, url in pkg.info.project_urls.__dict__.items():
+    for _type, url in pkg.info.project_urls.items():
         print(f"{_type}: {url}")
 
     return 0
@@ -58,9 +58,9 @@ def print_urls(package: str):
 
 def print_vulns(package: str, version: str):
     if version == "stable":
-        pkg = api.get_package(package)
+        pkg = PackageObject(package)
     else:
-        pkg = api.get_package(package, version)
+        pkg = PackageObject(package, version)
 
     if pkg.vulnerabilities is None:
         print("No vulnerabilities found for this release! :)")
@@ -122,7 +122,7 @@ def _download(url: str, dest: Union[str, BinaryIO]) -> Tuple[int, Optional[str]]
 
 def download_dist(
     package: str,
-    release: Optional[str] = None,
+    release: str,
     dist_type: str = "bdist_wheel",
     dest: Optional[Union[str, BinaryIO]] = None,
 ) -> bool:
@@ -146,6 +146,11 @@ def download_dist(
     ):  # enforce BufferedWriter is in binary mode
         print("If using BufferedWriter for dest, ensure it is opened in 'wb' mode.")
         return False
+
+    if release == "stable":
+        release = None # type: ignore
+    if dist_type == None:
+        dist_type = "bdist_wheel"
 
     # search for package on PyPI
     try:
@@ -172,4 +177,4 @@ def download_dist(
     return success
 
 
-__all__ = ["print_releases", "print_urls", "print_vulns"]
+__all__ = ["print_releases", "print_urls", "print_vulns", "download_dist"]

@@ -30,7 +30,8 @@ import signal
 import textwrap
 from argparse import Namespace
 from typing import Optional
-from otlet import api, exceptions
+from otlet import exceptions
+from otlet.api import PackageObject
 from . import util, __version__
 from .options import OtletArgumentParser
 
@@ -79,9 +80,9 @@ def main():
 
     try:
         if args.package_version != "stable":
-            pkg = api.get_release_full(args.package[0], args.package_version)
+            pkg = PackageObject(args.package[0], args.package_version)
         else:
-            pkg = api.get_package(args.package[0])
+            pkg = PackageObject(args.package[0])
     except exceptions.PyPIAPIError as err:
         print(f"{args.package[0]}: " + err.__str__(), file=sys.stderr)
         return 1
