@@ -27,6 +27,7 @@ CLI tool for returning PyPI package information, using the otlet wrapper
 import sys
 import signal
 import textwrap
+import urllib
 from argparse import Namespace
 from typing import Optional
 import arrow
@@ -122,5 +123,9 @@ def main():
 
 
 def run_cli():
-    code = main()
+    try:
+        code = main()
+    except urllib.error.URLError:
+        print("Unable to connect to PyPI... Check connection and try again.", file=sys.stderr)
+        raise SystemExit(1)
     raise SystemExit(code)
