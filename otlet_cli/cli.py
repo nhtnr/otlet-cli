@@ -24,12 +24,12 @@ CLI tool for returning PyPI package information, using the otlet wrapper
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
 # OR OTHER DEALINGS IN THE SOFTWARE.
 
-import os
 import sys
 import signal
 import textwrap
 from argparse import Namespace
 from typing import Optional
+import arrow
 from otlet import exceptions
 from otlet.api import PackageObject
 from . import util, __version__
@@ -87,12 +87,22 @@ def main():
         print(f"{args.package[0]}: " + err.__str__(), file=sys.stderr)
         return 1
 
+    def generate_release_date(dto) -> str:
+        ar_date = arrow.get(dto).to('local')
+        return f"{ar_date.humanize()} ({ar_date.strftime('%Y-%m-%d at %H:%M')})"
+    def get_dependency_count(reqs) -> str:
+        opt = 0
+        for req in reqs:
+            if "; extra ==" in req:
+                opt += 1
+        return f"{len(reqs)} ({opt} optional)"
+
     indent_chars = "\n\t\t"
     msg = textwrap.dedent(
         f"""Info for package {pkg.release_name}
 
     Summary: {pkg.info.summary}
-    Release date: {f"{pkg.upload_time.date()} at {pkg.upload_time.astimezone().timetz()}" if pkg.upload_time else "N/A"}
+    Release date: {generate_release_date(pkg.upload_time)}
     Homepage: {pkg.info.home_page}
     PyPI URL: {pkg.info.package_url}
     Documentation: {pkg.info.project_urls.get("Documentation", "N/A")}
@@ -100,7 +110,7 @@ def main():
     Maintainer: {pkg.info.maintainer or pkg.info.author} <{pkg.info.maintainer_email or pkg.info.author_email}>
     License: {pkg.info.license}
     Python Version(s): {pkg.info.requires_python or "Not Specified"}
-    Dependencies: ({len(pkg.info.requires_dist) if pkg.info.requires_dist else 0}) \n\t\t{indent_chars.join(pkg.info.requires_dist) if pkg.info.requires_dist else ""}
+    Dependencies: {get_dependency_count(pkg.info.requires_dist)} \n\t\t{indent_chars.join(pkg.info.requires_dist) if pkg.info.requires_dist else ""}
     """
     )
     if pkg.vulnerabilities:

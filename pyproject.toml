@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "otlet-cli"
-version = "1.0.0rc4"
+version = "1.0.0rc5"
 description = "CLI interface for otlet, the PyPI Web API wrapper"
 readme = "README.md"
 authors = ["Noah Tanner (nhtnr) <noahtnr@gmail.com>"]
@@ -11,6 +11,7 @@ classifiers = ["Development Status :: 4 - Beta",  "Intended Audience :: Develope
 [tool.poetry.dependencies]
 python = "^3.7"
 otlet = "^1.0.0a3"
+arrow = "^1.2.2"
 
 [tool.poetry.scripts]
 otlet = "otlet_cli.cli:run_cli"
