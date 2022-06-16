@@ -95,7 +95,7 @@ def main():
     Release date: {f"{pkg.upload_time.date()} at {pkg.upload_time.astimezone().timetz()}" if pkg.upload_time else "N/A"}
     Homepage: {pkg.info.home_page}
     PyPI URL: {pkg.info.package_url}
-    Documentation: {pkg.info.project_urls.Documentation if hasattr(pkg.info.project_urls, 'Documentation') else "N/A"}
+    Documentation: {pkg.info.project_urls.get("Documentation", "N/A")}
     Author: {pkg.info.author} <{pkg.info.author_email}>
     Maintainer: {pkg.info.maintainer or pkg.info.author} <{pkg.info.maintainer_email or pkg.info.author_email}>
     License: {pkg.info.license}

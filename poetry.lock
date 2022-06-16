@@ -1,6 +1,6 @@
 [[package]]
 name = "otlet"
-version = "1.0.0a1"
+version = "1.0.0a3"
 description = "Zero-dependency, pure-python wrapper for the PyPI JSON Web API"
 category = "main"
 optional = false
@@ -8,6 +8,7 @@ python-versions = ">=3.7,<4.0"
 
 [package.extras]
 docs = ["Sphinx (>=4.5.0,<5.0.0)", "sphinx-rtd-theme (>=1.0.0,<2.0.0)"]
+cli = ["otlet-cli (>=1.0.0rc1,<2.0.0)"]
 
 [metadata]
 lock-version = "1.1"
@@ -16,6 +17,6 @@ content-hash = "885a60039425970a6fad314fbb31b16ef87469399650e17eca457a3f37c2e57f
 
 [metadata.files]
 otlet = [
-    {file = "otlet-1.0.0a1-py3-none-any.whl", hash = "sha256:e1b54b94dad0bebccf3187a094cd3a12f91f46ccd3c7c34328d16f5dff42c37c"},
-    {file = "otlet-1.0.0a1.tar.gz", hash = "sha256:7ee4704a813f5eb2532a6c4775c4ad675b0acf4f56a6d61370ae8e1bfc6596e4"},
+    {file = "otlet-1.0.0a3-py3-none-any.whl", hash = "sha256:2d74cf41edbf2f7aad28d8f92a6d03054a8db6eb546a808db081f8534b8ed067"},
+    {file = "otlet-1.0.0a3.tar.gz", hash = "sha256:ccb85377b7a2b179016e9bd753ba98c14d6f85215a21786a981332410bc1e3f7"},
 ]
