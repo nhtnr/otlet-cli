@@ -10,7 +10,7 @@ classifiers = ["Development Status :: 4 - Beta",  "Intended Audience :: Develope
 
 [tool.poetry.dependencies]
 python = "^3.7"
-otlet = "^1.0.0a3"
+otlet = "^1.0.0rc1"
 arrow = "^1.2.2"
 
 [tool.poetry.scripts]
