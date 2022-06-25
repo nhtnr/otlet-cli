@@ -93,6 +93,8 @@ def main():
         return f"{ar_date.humanize()} ({ar_date.strftime('%Y-%m-%d at %H:%M')})"
     def get_dependency_count(reqs) -> str:
         opt = 0
+        if not reqs:
+            return '0'
         for req in reqs:
             if "; extra ==" in req:
                 opt += 1
