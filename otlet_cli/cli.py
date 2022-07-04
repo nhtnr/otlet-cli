@@ -108,7 +108,7 @@ def main():
     Release date: {generate_release_date(pkg.upload_time)}
     Homepage: {pkg.info.home_page}
     PyPI URL: {pkg.info.package_url}
-    Documentation: {pkg.info.project_urls.get("Documentation", "N/A")}
+    Documentation: {pkg.info.project_urls.get("Documentation", "N/A") if pkg.info.project_urls else "N/A"}
     Author: {pkg.info.author} <{pkg.info.author_email}>
     Maintainer: {pkg.info.maintainer or pkg.info.author} <{pkg.info.maintainer_email or pkg.info.author_email}>
     License: {pkg.info.license}
