@@ -12,11 +12,11 @@ typing-extensions = {version = "*", markers = "python_version < \"3.8\""}
 
 [[package]]
 name = "otlet"
-version = "1.0.0a3"
+version = "1.0.0rc4"
 description = "Zero-dependency, pure-python wrapper for the PyPI JSON Web API"
 category = "main"
 optional = false
-python-versions = ">=3.7,<4.0"
+python-versions = ">=3.6,<4.0"
 
 [package.extras]
 docs = ["Sphinx (>=4.5.0,<5.0.0)", "sphinx-rtd-theme (>=1.0.0,<2.0.0)"]
@@ -52,7 +52,7 @@ python-versions = ">=3.7"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "0c9da221ed8bbaaf9a43e9a202a686453f6c3b7c5b6eb52a8498d6800ea1f9ab"
+content-hash = "77f7a7f701a7bfc88ae41c179ae09135978a5fa1300dff641dd0016c78d3cc58"
 
 [metadata.files]
 arrow = [
@@ -60,8 +60,8 @@ arrow = [
     {file = "arrow-1.2.2.tar.gz", hash = "sha256:05caf1fd3d9a11a1135b2b6f09887421153b94558e5ef4d090b567b47173ac2b"},
 ]
 otlet = [
-    {file = "otlet-1.0.0a3-py3-none-any.whl", hash = "sha256:2d74cf41edbf2f7aad28d8f92a6d03054a8db6eb546a808db081f8534b8ed067"},
-    {file = "otlet-1.0.0a3.tar.gz", hash = "sha256:ccb85377b7a2b179016e9bd753ba98c14d6f85215a21786a981332410bc1e3f7"},
+    {file = "otlet-1.0.0rc4-py3-none-any.whl", hash = "sha256:a53cbfd9fc5c6c388c9168bd9be17a31911020d0055b2f2e8e6c263ad296395d"},
+    {file = "otlet-1.0.0rc4.tar.gz", hash = "sha256:6effc95c99fb90e4e95cc2e228141b4dfa304f1c3f94a389425d07dc0637a360"},
 ]
 python-dateutil = [
     {file = "python-dateutil-2.8.2.tar.gz", hash = "sha256:0123cacc1627ae19ddf3c27a5de5bd67ee4586fbdd6440d9748f8abb483d3e86"},
@@ -72,6 +72,6 @@ six = [
     {file = "six-1.16.0.tar.gz", hash = "sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926"},
 ]
 typing-extensions = [
-    {file = "typing_extensions-4.2.0-py3-none-any.whl", hash = "sha256:6657594ee297170d19f67d55c05852a874e7eb634f4f753dbd667855e07c1708"},
-    {file = "typing_extensions-4.2.0.tar.gz", hash = "sha256:f1c24655a0da0d1b67f07e17a5e6b2a105894e6824b92096378bb3668ef02376"},
+    {file = "typing_extensions-4.3.0-py3-none-any.whl", hash = "sha256:25642c956049920a5aa49edcdd6ab1e06d7e5d467fc00e0506c44ac86fbfca02"},
+    {file = "typing_extensions-4.3.0.tar.gz", hash = "sha256:e6d2677a32f47fc7eb2795db1dd15c1f34eff616bcaf2cfb5e997f854fa1c4a6"},
 ]

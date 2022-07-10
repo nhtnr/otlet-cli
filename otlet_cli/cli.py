@@ -29,10 +29,10 @@ import signal
 import textwrap
 import urllib
 from argparse import Namespace
-from typing import Optional
+from typing import Optional, List
 import arrow
 from otlet import exceptions
-from otlet.api import PackageObject
+from otlet.api import PackageObject, PackageDependencyObject
 from . import util, __version__
 from .options import OtletArgumentParser
 
@@ -89,16 +89,16 @@ def main():
         return 1
 
     def generate_release_date(dto) -> str:
-        ar_date = arrow.get(dto).to('local')
-        return f"{ar_date.humanize()} ({ar_date.strftime('%Y-%m-%d at %H:%M')})"
-    def get_dependency_count(reqs) -> str:
-        opt = 0
-        if not reqs:
-            return '0'
-        for req in reqs:
-            if "; extra ==" in req:
-                opt += 1
-        return f"{len(reqs)} ({opt} optional)"
+        if dto:
+            ar_date = arrow.get(dto).to('local')
+            return f"{ar_date.humanize()} ({ar_date.strftime('%Y-%m-%d at %H:%M')})"
+        return "N/A"
+
+    def generate_dep_list(deps: List[PackageDependencyObject]) -> str:
+        dstr = ''
+        for dep in deps:
+            dstr += f"\t\t{dep.name}\n"
+        return dstr
 
     indent_chars = "\n\t\t"
     msg = textwrap.dedent(
@@ -113,7 +113,7 @@ def main():
     Maintainer: {pkg.info.maintainer or pkg.info.author} <{pkg.info.maintainer_email or pkg.info.author_email}>
     License: {pkg.info.license}
     Python Version(s): {pkg.info.requires_python or "Not Specified"}
-    Dependencies: {get_dependency_count(pkg.info.requires_dist)} \n\t\t{indent_chars.join(pkg.info.requires_dist) if pkg.info.requires_dist else ""}
+    Dependencies: {pkg.dependency_count} \n {generate_dep_list(pkg.dependencies)}
     """
     )
     if pkg.vulnerabilities:
