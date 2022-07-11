@@ -1,4 +1,5 @@
 import os
+import sys
 import textwrap
 import argparse
 from urllib.request import urlopen
@@ -106,11 +107,8 @@ def _download(url: str, dest: Union[str, BinaryIO]) -> Tuple[int, Optional[str]]
     data_hash = md5(data).hexdigest()
     cloud_hash = request_obj.headers["ETag"].strip('"')
     if data_hash != cloud_hash:
-        raise HashDigestMatchError(
-            data_hash,
-            cloud_hash,
-            f'Hashes do not match. (data_hash ("{data_hash}") != cloud_hash ("{cloud_hash}")',
-        )
+        print("File hash doesn't match, and the file may have been corrupted. Please try again...", file=sys.stderr)
+        raise SystemExit(1)
 
     # write bytes to destination and return
     bw = 0
@@ -129,18 +127,6 @@ def download_dist(
 ) -> bool:
     """
     Download a specified package's distribution file.
-
-    :param package: Name of desired package to download
-    :type package: str
-
-    :param release: Version of package to download (Default: stable)
-    :type release: Optional[str]
-
-    :param dist_type: Type of distribution to download (Default: bdist_wheel)
-    :type dist_type: str
-
-    :param dest: Destination for downloaded output file (Default: current directory with original filename)
-    :type dest: Optional[Union[str, BinaryIO]]
     """
     if (
         isinstance(dest, BufferedWriter) and dest.mode != "wb"
