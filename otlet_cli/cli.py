@@ -34,7 +34,7 @@ import arrow
 from otlet import exceptions
 from otlet.api import PackageObject, PackageDependencyObject
 from . import util, __version__
-from .options import OtletArgumentParser
+from .clparser.options import OtletArgumentParser
 
 
 def init_args() -> Optional[Namespace]:
@@ -92,12 +92,17 @@ def main():
         if dto:
             ar_date = arrow.get(dto).to('local')
             return f"{ar_date.humanize()} ({ar_date.strftime('%Y-%m-%d at %H:%M')})"
-        return "N/A"
+        return "Unknown"
 
     def generate_dep_list(deps: List[PackageDependencyObject]) -> str:
         dstr = ''
+        if not deps:
+            return dstr
         for dep in deps:
-            dstr += f"\t\t{dep.name}\n"
+            dstr += f"\t\t{dep.name}"
+            if dep.version_constraints:
+                dstr += f" ({', '.join(dep.version_constraints)})"
+            dstr += '\n'
         return dstr
 
     indent_chars = "\n\t\t"

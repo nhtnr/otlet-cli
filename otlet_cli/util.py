@@ -63,19 +63,20 @@ def print_vulns(package: str, version: str):
         pkg = PackageObject(package, version)
 
     if pkg.vulnerabilities is None:
-        print("No vulnerabilities found for this release! :)")
+        print("\u001b[32mNo vulnerabilities found for this release! :)\u001b[0m")
         return 0
 
     os.system("clear" if os.name != "nt" else "cls")
-    print(
-        "==",
-        len(pkg.vulnerabilities),
-        "security vulnerabilities found for",
-        pkg.release_name,
-        "==\n",
-    )
 
     for vuln in pkg.vulnerabilities:
+        print(
+            "\u001b[1m\u001b[31m==",
+            len(pkg.vulnerabilities),
+            "security vulnerabilities found for",
+            pkg.release_name + '!',
+            "==\n\u001b[0m",
+        )
+
         print(
             pkg.vulnerabilities.index(vuln) + 1, "/", len(pkg.vulnerabilities), sep=""
         )

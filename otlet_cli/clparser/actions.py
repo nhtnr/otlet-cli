@@ -1,6 +1,6 @@
 import sys
 from argparse import Action, SUPPRESS
-from . import __version__
+from .. import __version__
 from otlet import __version__ as api_version
 
 
