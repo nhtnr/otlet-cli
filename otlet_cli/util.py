@@ -124,7 +124,7 @@ def download_dist(
     release: str,
     dist_type: str = "bdist_wheel",
     dest: Optional[Union[str, BinaryIO]] = None,
-) -> bool:
+) -> int:
     """
     Download a specified package's distribution file.
     """
@@ -132,7 +132,7 @@ def download_dist(
         isinstance(dest, BufferedWriter) and dest.mode != "wb"
     ):  # enforce BufferedWriter is in binary mode
         print("If using BufferedWriter for dest, ensure it is opened in 'wb' mode.")
-        return False
+        return 1
 
     if release == "stable":
         release = None # type: ignore
@@ -144,7 +144,7 @@ def download_dist(
         pkg = PackageObject(package, release)
     except (PyPIPackageNotFound, PyPIPackageVersionNotFound) as e:
         print(e.__str__())
-        return False
+        return 1
 
     # search for requested distribution type in pkg.urls
     # and download distribution
@@ -161,7 +161,7 @@ def download_dist(
         print(
             f'Distribution type "{dist_type}" not available for this version of "{package}".'
         )
-    return success
+    return int(not success)
 
 
 __all__ = ["print_releases", "print_urls", "print_vulns", "download_dist"]
