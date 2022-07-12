@@ -33,7 +33,7 @@ from typing import Optional, List
 import arrow
 from otlet import exceptions
 from otlet.api import PackageObject, PackageDependencyObject
-from . import util, __version__
+from . import util, download, __version__
 from .clparser.options import OtletArgumentParser
 
 
@@ -71,7 +71,7 @@ def main():
         if "releases" in sys.argv:
             return util.print_releases(args)
         if "download" in sys.argv:
-            return util.download_dist(
+            return download.download_dist(
                 args.package[0], args.package_version, args.dist_type, args.dest
             )
     if args.urls:

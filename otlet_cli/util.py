@@ -1,11 +1,7 @@
 import os
-import sys
 import textwrap
 import argparse
-from urllib.request import urlopen
-from typing import Optional, BinaryIO, Tuple, Union
-from io import BufferedWriter
-#from otlet import api
+from typing import Optional
 from otlet.exceptions import *
 from otlet.api import PackageObject
 
@@ -95,73 +91,4 @@ def print_vulns(package: str, version: str):
     return 0
 
 
-def _download(url: str, dest: Union[str, BinaryIO]) -> Tuple[int, Optional[str]]:
-    """Download a binary file from a given URL. Do not use this function directly."""
-    # download file and store bytes
-    request_obj = urlopen(url)
-    data = request_obj.read()
-
-    # enforce that we downloaded the correct file, and no corruption took place
-    from hashlib import md5
-
-    data_hash = md5(data).hexdigest()
-    cloud_hash = request_obj.headers["ETag"].strip('"')
-    if data_hash != cloud_hash:
-        print("File hash doesn't match, and the file may have been corrupted. Please try again...", file=sys.stderr)
-        raise SystemExit(1)
-
-    # write bytes to destination and return
-    bw = 0
-    if isinstance(dest, str):
-        dest = open(dest, "wb")
-    with dest as f:
-        bw = f.write(data)
-    return bw, dest.name
-
-
-def download_dist(
-    package: str,
-    release: str,
-    dist_type: str = "bdist_wheel",
-    dest: Optional[Union[str, BinaryIO]] = None,
-) -> int:
-    """
-    Download a specified package's distribution file.
-    """
-    if (
-        isinstance(dest, BufferedWriter) and dest.mode != "wb"
-    ):  # enforce BufferedWriter is in binary mode
-        print("If using BufferedWriter for dest, ensure it is opened in 'wb' mode.")
-        return 1
-
-    if release == "stable":
-        release = None # type: ignore
-    if dist_type == None:
-        dist_type = "bdist_wheel"
-
-    # search for package on PyPI
-    try:
-        pkg = PackageObject(package, release)
-    except (PyPIPackageNotFound, PyPIPackageVersionNotFound) as e:
-        print(e.__str__())
-        return 1
-
-    # search for requested distribution type in pkg.urls
-    # and download distribution
-    success = False
-    for url in pkg.urls:
-        if url.packagetype == dist_type:
-            if dest is None:
-                dest = url.filename
-            s, f = _download(url.url, dest)
-            print("Wrote", s, "bytes to", f)
-            success = True
-            break
-    if not success:
-        print(
-            f'Distribution type "{dist_type}" not available for this version of "{package}".'
-        )
-    return int(not success)
-
-
-__all__ = ["print_releases", "print_urls", "print_vulns", "download_dist"]
+__all__ = ["print_releases", "print_urls", "print_vulns"]
