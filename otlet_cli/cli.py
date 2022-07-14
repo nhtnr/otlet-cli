@@ -72,7 +72,7 @@ def main():
             return util.print_releases(args)
         if "download" in sys.argv:
             return download.download_dist(
-                args.package[0], args.package_version, args.dist_type, args.dest
+                args.package[0], args.package_version, args.dest, args.whl_format, args.dist_type
             )
     if args.urls:
         return util.print_urls(args.package[0])

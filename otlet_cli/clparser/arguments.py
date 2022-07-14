@@ -87,4 +87,11 @@ DOWNLOAD_ARGUMENTS_LIST: Dict[str, Any] = {
         "nargs": "?",
         "action": "store",
     },
+    "whl_format": {
+        "opts": ["-f", "--format"],
+        "metavar": ("FORMAT"),
+        "help": "TBA",
+        "nargs": "?",
+        "action": "store"
+    }
 }
