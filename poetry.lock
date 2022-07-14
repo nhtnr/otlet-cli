@@ -12,7 +12,7 @@ typing-extensions = {version = "*", markers = "python_version < \"3.8\""}
 
 [[package]]
 name = "otlet"
-version = "1.0.0rc4"
+version = "1.0.0rc5"
 description = "Zero-dependency, pure-python wrapper for the PyPI JSON Web API"
 category = "main"
 optional = false
@@ -60,8 +60,8 @@ arrow = [
     {file = "arrow-1.2.2.tar.gz", hash = "sha256:05caf1fd3d9a11a1135b2b6f09887421153b94558e5ef4d090b567b47173ac2b"},
 ]
 otlet = [
-    {file = "otlet-1.0.0rc4-py3-none-any.whl", hash = "sha256:a53cbfd9fc5c6c388c9168bd9be17a31911020d0055b2f2e8e6c263ad296395d"},
-    {file = "otlet-1.0.0rc4.tar.gz", hash = "sha256:6effc95c99fb90e4e95cc2e228141b4dfa304f1c3f94a389425d07dc0637a360"},
+    {file = "otlet-1.0.0rc5-py3-none-any.whl", hash = "sha256:ce66440d340f532fc46f3eaeb940816b0fe6748c0c484114371dcb583636df7c"},
+    {file = "otlet-1.0.0rc5.tar.gz", hash = "sha256:f7bc1290ead1b4a85704359b46e7344b85c9e3c42900356e3d2f958711f956ba"},
 ]
 python-dateutil = [
     {file = "python-dateutil-2.8.2.tar.gz", hash = "sha256:0123cacc1627ae19ddf3c27a5de5bd67ee4586fbdd6440d9748f8abb483d3e86"},

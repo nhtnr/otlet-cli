@@ -49,35 +49,39 @@ def download_dist(
     package: str,
     release: str,
     dest: str,
-    format: str,
+    format: Optional[str] = None,
     dist_type: Optional[str] = None,
 ) -> int:
     """
     Download a specified package's distribution file.
     """
 
+    if dist_type != "bdist_wheel" and format:
+        print(f"Specified custom .whl format, but requested '{dist_type}'. Ignoring...", file=sys.stderr)
+
     if release == "stable":
         release = None # type: ignore
     if dist_type is None:
         dist_type = "bdist_wheel"
-    if format is None:
-        format = "*-*-*-*"
-    _format = TAGRGX.match(format)
-    if _format is None:
-        print("Improper format used. Should be '{build_tag}-{python_tag}-{abi_tag}-{platform_tag}'", file=sys.stderr)
-        print(f"Recieved: '{format}'")
-        return 1
+    if dist_type == "bdist_wheel":
+        if format is None:
+            format = "*-*-*-*"
+        _format = TAGRGX.match(format)
+        if _format is None:
+            print("Improper format used. Should be '{build_tag}-{python_tag}-{abi_tag}-{platform_tag}'", file=sys.stderr)
+            print(f"Recieved: '{format}'")
+            return 1
 
-    flagged = {
-        "build": None,
-        "python_tags": None,
-        "abi_tags": None,
-        "platform_tags": None
-    }
-    # parse format string
-    for k in flagged.keys():
-        if _format.group(k) != '*':
-            flagged[k] = _format.group(k)
+        flagged = {
+            "build": None,
+            "python_tags": None,
+            "abi_tags": None,
+            "platform_tags": None
+        }
+        # parse format string
+        for k in flagged.keys():
+            if _format.group(k) != '*':
+                flagged[k] = _format.group(k)
 
     # search for package on PyPI
     try:
@@ -92,14 +96,15 @@ def download_dist(
     bad_key = False
     for url in pkg.urls:
         if url.packagetype == dist_type:
-            whl_match = WHLRGX.match(url.filename)
-            for k in flagged.keys():
-                if flagged[k] is not None and flagged[k] != whl_match.group(k):
-                    bad_key = True
-                    break
-            if bad_key:
-                bad_key = False
-                continue
+            if dist_type == "bdist_wheel":
+                whl_match = WHLRGX.match(url.filename)
+                for k in flagged.keys():
+                    if flagged[k] is not None and flagged[k] != whl_match.group(k):
+                        bad_key = True
+                        break
+                if bad_key:
+                    bad_key = False
+                    continue
             if dest is None:
                 dest = url.filename
             s, f = _download(url.url, dest)
