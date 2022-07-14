@@ -4,6 +4,7 @@ import argparse
 from typing import Optional
 from otlet.exceptions import *
 from otlet.api import PackageObject
+from otlet.packaging.version import parse
 
 
 def print_releases(args: Optional[argparse.Namespace] = None):
@@ -27,7 +28,8 @@ def print_releases(args: Optional[argparse.Namespace] = None):
 
     pkg = PackageObject(package)
     for rel, obj in pkg.releases.items():
-        if _top_version < rel or _bottom_version > rel:
+        _rel = parse(rel)
+        if _top_version < _rel or _bottom_version > _rel:
             continue
         if _top_date < obj.upload_time or _bottom_date > obj.upload_time:
             continue
