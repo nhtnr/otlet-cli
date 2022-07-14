@@ -84,7 +84,7 @@ def print_vulns(package: str, version: str):
         msg += textwrap.TextWrapper(initial_indent="\t", subsequent_indent="\t").fill(
             vuln.details
         )
-        msg += f"\n\u001b[1mFixed in version(s):\u001b[0m '{', '.join(vuln.fixed_in).strip(', ')}'\n"
+        msg += f"\n\u001b[1mFixed in version(s):\u001b[0m '{', '.join([str(_) for _ in vuln.fixed_in]).strip(', ')}'\n"
         msg += f"(See more: '{vuln.link}')\n"
         print(msg)
         input("== Press ENTER for next page ==")

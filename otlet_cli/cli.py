@@ -104,7 +104,6 @@ def main():
             dstr += '\n'
         return dstr
 
-    indent_chars = "\n\t\t"
     msg = textwrap.dedent(
         f"""Info for package {pkg.release_name}
 
