@@ -46,14 +46,14 @@ RELEASES_ARGUMENT_LIST: Dict[str, Any] = {
     "before_date": {
         "opts": ["-bd", "--before-date"],
         "metavar": ("DATE"),
-        "help": "Return releases before specified date",
+        "help": "Return releases before specified date (YYYY-MM-DD)",
         "nargs": 1,
         "action": "store",
     },
     "after_date": {
         "opts": ["-ad", "--after-date"],
         "metavar": ("DATE"),
-        "help": "Return releases after specified date",
+        "help": "Return releases after specified date (YYYY-MM-DD)",
         "nargs": 1,
         "action": "store",
     },

@@ -66,20 +66,19 @@ def main():
     args = init_args()
     if not args:
         return 1
-
-    if args.subparsers:
-        if "releases" in sys.argv:
-            return util.print_releases(args)
-        if "download" in sys.argv:
-            return download.download_dist(
-                args.package[0], args.package_version, args.dest, args.whl_format, args.dist_type
-            )
-    if args.urls:
-        return util.print_urls(args.package[0])
-    if args.vulnerabilities:
-        return util.print_vulns(args.package[0], args.package_version)
-
     try:
+        if args.subparsers:
+            if "releases" in sys.argv:
+                return util.print_releases(args)
+            if "download" in sys.argv:
+                return download.download_dist(
+                    args.package[0], args.package_version, args.dest, args.whl_format, args.dist_type
+                )
+        if args.urls:
+            return util.print_urls(args.package[0])
+        if args.vulnerabilities:
+            return util.print_vulns(args.package[0], args.package_version)
+
         if args.package_version != "stable":
             pkg = PackageObject(args.package[0], args.package_version)
         else:
