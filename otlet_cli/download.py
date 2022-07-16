@@ -56,13 +56,14 @@ def download_dist(
     Download a specified package's distribution file.
     """
 
-    if dist_type != "bdist_wheel" and format:
-        print(f"Specified custom .whl format, but requested '{dist_type}'. Ignoring...", file=sys.stderr)
-
     if release == "stable":
         release = None # type: ignore
     if dist_type is None:
         dist_type = "bdist_wheel"
+    
+    if dist_type != "bdist_wheel" and format:
+        print(f"Specified custom .whl format, but requested '{dist_type}'. Ignoring...", file=sys.stderr)
+
     if dist_type == "bdist_wheel":
         if format is None:
             format = "*-*-*-*"
