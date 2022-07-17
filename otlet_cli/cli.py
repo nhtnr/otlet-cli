@@ -33,6 +33,7 @@ from typing import Optional, List
 import arrow
 from otlet import exceptions
 from otlet.api import PackageDependencyObject
+from otlet.markers import DEPENDENCY_ENVIRONMENT_MARKERS
 
 from . import util, __version__
 from .clparser.options import OtletArgumentParser
@@ -97,6 +98,8 @@ def main():
         if pkg.vulnerabilities:
             count += 1
         if pkg.info.yanked:
+            count += 1
+        if pkg.info.requires_python and not DEPENDENCY_ENVIRONMENT_MARKERS["python_full_version"].fits_constraints(pkg.info.requires_python):
             count += 1
         if count:
             return f"\n\u001b[1m\u001b[3m\u001b[33m**{count}**\u001b[0m\u001b[33m notice(s) for this release.\n    - Use '--notices' for more information\u001b[0m\n"

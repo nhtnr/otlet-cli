@@ -6,6 +6,7 @@ from typing import Optional, Tuple
 from otlet.exceptions import *
 from otlet.api import PackageObject
 from otlet.packaging.version import parse
+from otlet.markers import DEPENDENCY_ENVIRONMENT_MARKERS
 from . import download
 
 
@@ -90,6 +91,9 @@ def print_notices(pkg: PackageObject):
         count += 1
     if pkg.info.yanked:
         print(f"\t\u001b[30;1m- This version has been yanked from PyPI:\n\t\t\u001b[37;1m'{pkg.info.yanked_reason}'\u001b[0m\n")
+        count += 1
+    if pkg.info.requires_python and not DEPENDENCY_ENVIRONMENT_MARKERS["python_full_version"].fits_constraints(">=3.10"):
+        print(f"\t\u001b[30;1m- '{pkg.release_name}' is incompatible with your current Python version. \n\t\t\u001b[37;1m(Using '{DEPENDENCY_ENVIRONMENT_MARKERS['python_full_version']}', requires '{pkg.info.requires_python}')\u001b[0m")
         count += 1
     if not count:
         print("\t\u001b[32m- No notices for this release! :)\u001b[0m")
