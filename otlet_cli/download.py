@@ -46,8 +46,7 @@ def _download(url: str, dest: str) -> Tuple[int, Optional[str]]:
 
 
 def download_dist(
-    package: str,
-    release: str,
+    pkg: PackageObject,
     dest: str,
     format: Optional[str] = None,
     dist_type: Optional[str] = None,
@@ -56,8 +55,6 @@ def download_dist(
     Download a specified package's distribution file.
     """
 
-    if release == "stable":
-        release = None # type: ignore
     if dist_type is None:
         dist_type = "bdist_wheel"
     
@@ -83,13 +80,6 @@ def download_dist(
         for k in flagged.keys():
             if _format.group(k) != '*':
                 flagged[k] = _format.group(k)
-
-    # search for package on PyPI
-    try:
-        pkg = PackageObject(package, release)
-    except (PyPIPackageNotFound, PyPIPackageVersionNotFound) as e:
-        print(e.__str__())
-        return 1
 
     # search for requested distribution type in pkg.urls
     # and download distribution

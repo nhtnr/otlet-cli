@@ -1,13 +1,15 @@
 import os
+import sys
 import textwrap
 import argparse
-from typing import Optional
+from typing import Optional, Tuple
 from otlet.exceptions import *
 from otlet.api import PackageObject
 from otlet.packaging.version import parse
+from . import download
 
 
-def print_releases(args: Optional[argparse.Namespace] = None):
+def _print_releases(args: Optional[argparse.Namespace] = None):
     from datetime import datetime
     from otlet.packaging.version import etc, Version
 
@@ -42,25 +44,7 @@ def print_releases(args: Optional[argparse.Namespace] = None):
 
     return 0
 
-
-def print_urls(package: str):
-    pkg = PackageObject(package)
-    if pkg.info.project_urls is None:
-        print(f"No URLs available for {pkg.release_name}")
-        return 0
-
-    for _type, url in pkg.info.project_urls.items():
-        print(f"{_type}: {url}")
-
-    return 0
-
-
-def print_vulns(package: str, version: str):
-    if version == "stable":
-        pkg = PackageObject(package)
-    else:
-        pkg = PackageObject(package, version)
-
+def _print_vulns(pkg: PackageObject):
     if pkg.vulnerabilities is None:
         print("\u001b[32mNo vulnerabilities found for this release! :)\u001b[0m")
         return 0
@@ -92,5 +76,38 @@ def print_vulns(package: str, version: str):
 
     return 0
 
+def check_args(args: argparse.Namespace) -> Tuple[PackageObject, int]:
+    code = 2
+    if args.package_version == "stable":
+        pk_object = PackageObject(args.package[0])
+    else:
+        pk_object = PackageObject(args.package[0], args.package_version)
 
-__all__ = ["print_releases", "print_urls", "print_vulns"]
+    if args.subparsers:
+        if "releases" in sys.argv:
+            code = _print_releases(args)
+        if "download" in sys.argv:
+            code = download.download_dist(
+                pk_object, args.dest, args.whl_format, args.dist_type
+            )
+    elif args.vulnerabilities:
+        """List all known vulnerabilities for a release."""
+        code = _print_vulns(pk_object)
+    elif args.urls:
+        """List all available URLs for a release."""
+        if pk_object.info.project_urls is None:
+            print(f"No URLs available for {pk_object.release_name}")
+        else:
+            for _type, url in pk_object.info.project_urls.items():
+                print(f"{_type}: {url}")
+        code = 0
+    elif args.list_extras:
+        """List all allowable extras for a release."""
+        print(f"Allowable extras for '{pk_object.release_name}' are:")
+        for e in pk_object.info.possible_extras:
+            print(f"\t- {pk_object.canonicalized_name}[{e}]")
+        code = 0
+    return (pk_object, code)
+
+
+__all__ = ["check_args"]

@@ -19,6 +19,11 @@ PACKAGE_VERSION_ARGUMENT: Dict[str, Any] = {
 }
 
 ARGUMENT_LIST: Dict[str, Any] = {
+    "list_extras": {
+        "opts": ["-e", "--list-extras"],
+        "help": "TBD",
+        "action": "store_true",
+    },
     "urls": {
         "opts": ["--urls"],
         "help": "print list of all relevant URLs for package",

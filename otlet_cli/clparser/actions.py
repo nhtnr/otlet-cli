@@ -8,7 +8,6 @@ class OtletVersionAction(Action):
     def __init__(
         self,
         option_strings,
-        version=None,
         dest=SUPPRESS,
         default=SUPPRESS,
         help="show program's version number and exit",
@@ -22,7 +21,7 @@ class OtletVersionAction(Action):
         )
         self.version = __version__
 
-    def __call__(self, parser, namespace, values, option_string=None):
+    def __call__(self, parser, *args, **kwargs):
         import os
         import textwrap
 

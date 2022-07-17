@@ -32,8 +32,9 @@ from argparse import Namespace
 from typing import Optional, List
 import arrow
 from otlet import exceptions
-from otlet.api import PackageObject, PackageDependencyObject
-from . import util, download, __version__
+from otlet.api import PackageDependencyObject
+
+from . import util, __version__
 from .clparser.options import OtletArgumentParser
 
 
@@ -67,24 +68,11 @@ def main():
     if not args:
         return 1
     try:
-        if args.subparsers:
-            if "releases" in sys.argv:
-                return util.print_releases(args)
-            if "download" in sys.argv:
-                return download.download_dist(
-                    args.package[0], args.package_version, args.dest, args.whl_format, args.dist_type
-                )
-        if args.urls:
-            return util.print_urls(args.package[0])
-        if args.vulnerabilities:
-            return util.print_vulns(args.package[0], args.package_version)
-
-        if args.package_version != "stable":
-            pkg = PackageObject(args.package[0], args.package_version)
-        else:
-            pkg = PackageObject(args.package[0])
+        pkg, check_return = util.check_args(args)
+        if check_return != 2:
+            return check_return
     except exceptions.PyPIAPIError as err:
-        print(f"{args.package[0]}: " + err.__str__(), file=sys.stderr)
+        print(f"otlet: " + err.__str__(), file=sys.stderr)
         return 1
 
     def generate_release_date(dto) -> str:
