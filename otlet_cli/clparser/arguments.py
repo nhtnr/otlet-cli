@@ -27,7 +27,7 @@ ARGUMENT_LIST: Dict[str, Any] = {
     "notices": {
         "opts": ["-n", "--notices"],
         "help": "list all available notices for a release.",
-        "action": "store_true"
+        "action": "store_true",
     },
     "urls": {
         "opts": ["--urls"],
@@ -47,12 +47,12 @@ ARGUMENT_LIST: Dict[str, Any] = {
 }
 
 RELEASES_ARGUMENT_LIST: Dict[str, Any] = {
-# DEFER TO 1.1
-#    "show_vulnerable": {
-#        "opts": ["--show-vulnerable"],
-#        "help": "Not implemented",
-#        "action": "store_true",
-#    },
+    # DEFER TO 1.1
+    #    "show_vulnerable": {
+    #        "opts": ["--show-vulnerable"],
+    #        "help": "Not implemented",
+    #        "action": "store_true",
+    #    },
     "before_date": {
         "opts": ["-bd", "--before-date"],
         "metavar": ("DATE"),
@@ -103,6 +103,6 @@ DOWNLOAD_ARGUMENTS_LIST: Dict[str, Any] = {
         "metavar": ("FORMAT"),
         "help": "Match format for desired wheel.   ({build_tag}-{python_tag}-{abi_tag}-{platform_tag}, wildcard=*)",
         "nargs": "?",
-        "action": "store"
-    }
+        "action": "store",
+    },
 }

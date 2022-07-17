@@ -2,18 +2,15 @@ import os
 import sys
 import textwrap
 import argparse
+from datetime import datetime
 from typing import Optional, Tuple
-from otlet.exceptions import *
 from otlet.api import PackageObject
-from otlet.packaging.version import parse
+from otlet.packaging.version import parse, etc, Version
 from otlet.markers import DEPENDENCY_ENVIRONMENT_MARKERS
 from . import download
 
 
 def _print_releases(args: Optional[argparse.Namespace] = None):
-    from datetime import datetime
-    from otlet.packaging.version import etc, Version
-
     package = args.package[0]  # type: ignore
     _top_version = etc.TopVersion()
     _bottom_version = etc.BottomVersion()
@@ -45,6 +42,7 @@ def _print_releases(args: Optional[argparse.Namespace] = None):
 
     return 0
 
+
 def _print_vulns(pkg: PackageObject):
     if pkg.vulnerabilities is None:
         print("\u001b[32mNo vulnerabilities found for this release! :)\u001b[0m")
@@ -55,16 +53,14 @@ def _print_vulns(pkg: PackageObject):
 
     for vuln in pkg.vulnerabilities:
         print(
-            f"\u001b[1m\u001b[31m==",
+            "\u001b[1m\u001b[31m==",
             VULNERABILITY_COUNT,
             "security vulnerabilities found for",
-            pkg.release_name + '!',
+            pkg.release_name + "!",
             "==\n\u001b[0m",
         )
 
-        print(
-            pkg.vulnerabilities.index(vuln) + 1, "/", VULNERABILITY_COUNT, sep=""
-        )
+        print(pkg.vulnerabilities.index(vuln) + 1, "/", VULNERABILITY_COUNT, sep="")
         msg = ""
         msg += f"\u001b[1m{vuln.id} ({', '.join(vuln.aliases).strip(', ')})\u001b[0m\n"
         msg += textwrap.TextWrapper(initial_indent="\t", subsequent_indent="\t").fill(
@@ -78,26 +74,36 @@ def _print_vulns(pkg: PackageObject):
 
     return 0
 
+
 def print_notices(pkg: PackageObject):
     print(f"Notices for package '{pkg.release_name}':\n")
     count = 0
     if pkg.vulnerabilities:
         VCOUNT = len(pkg.vulnerabilities)
         if VCOUNT >= 10:
-            color = '\u001b[31m'
+            color = "\u001b[31m"
         else:
-            color = '\u001b[33m'
-        print(f"\t\u001b[30;1m- This version has \u001b[1m{color}{len(pkg.vulnerabilities)}\u001b[0m\u001b[30;1m known security vulnerabilities, use the '--vulnerabilities' flag to view them\u001b[0m\n")
+            color = "\u001b[33m"
+        print(
+            f"\t\u001b[30;1m- This version has \u001b[1m{color}{VCOUNT}\u001b[0m\u001b[30;1m known security vulnerabilities, use the '--vulnerabilities' flag to view them\u001b[0m\n"
+        )
         count += 1
     if pkg.info.yanked:
-        print(f"\t\u001b[30;1m- This version has been yanked from PyPI:\n\t\t\u001b[37;1m'{pkg.info.yanked_reason}'\u001b[0m\n")
+        print(
+            f"\t\u001b[30;1m- This version has been yanked from PyPI:\n\t\t\u001b[37;1m'{pkg.info.yanked_reason}'\u001b[0m\n"
+        )
         count += 1
-    if pkg.info.requires_python and not DEPENDENCY_ENVIRONMENT_MARKERS["python_full_version"].fits_constraints(">=3.10"):
-        print(f"\t\u001b[30;1m- '{pkg.release_name}' is incompatible with your current Python version. \n\t\t\u001b[37;1m(Using '{DEPENDENCY_ENVIRONMENT_MARKERS['python_full_version']}', requires '{pkg.info.requires_python}')\u001b[0m")
+    if pkg.info.requires_python and not DEPENDENCY_ENVIRONMENT_MARKERS[
+        "python_full_version"
+    ].fits_constraints(">=3.10"):
+        print(
+            f"\t\u001b[30;1m- '{pkg.release_name}' is incompatible with your current Python version. \n\t\t\u001b[37;1m(Using '{DEPENDENCY_ENVIRONMENT_MARKERS['python_full_version']}', requires '{pkg.info.requires_python}')\u001b[0m"
+        )
         count += 1
     if not count:
         print("\t\u001b[32m- No notices for this release! :)\u001b[0m")
     return 0
+
 
 def check_args(args: argparse.Namespace) -> Tuple[PackageObject, int]:
     code = 2
@@ -114,10 +120,10 @@ def check_args(args: argparse.Namespace) -> Tuple[PackageObject, int]:
                 pk_object, args.dest, args.whl_format, args.dist_type
             )
     elif args.vulnerabilities:
-        """List all known vulnerabilities for a release."""
+        # List all known vulnerabilities for a release.
         code = _print_vulns(pk_object)
     elif args.urls:
-        """List all available URLs for a release."""
+        # List all available URLs for a release.
         if pk_object.info.project_urls is None:
             print(f"No URLs available for {pk_object.release_name}")
         else:
@@ -125,10 +131,10 @@ def check_args(args: argparse.Namespace) -> Tuple[PackageObject, int]:
                 print(f"{_type}: {url}")
         code = 0
     elif args.list_extras:
-        """List all allowable extras for a release."""
+        # List all allowable extras for a release.
         print(f"Allowable extras for '{pk_object.release_name}' are:")
-        for e in pk_object.info.possible_extras:
-            print(f"\t- {pk_object.canonicalized_name}[{e}]")
+        for extra in pk_object.info.possible_extras:
+            print(f"\t- {pk_object.canonicalized_name}[{extra}]")
         code = 0
     elif args.notices:
         code = print_notices(pk_object)

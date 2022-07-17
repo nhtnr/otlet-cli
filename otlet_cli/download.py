@@ -1,9 +1,9 @@
 import re
 import sys
+from hashlib import md5
 from urllib.request import urlopen
 from typing import Tuple, Optional
 from otlet import PackageObject
-from otlet.exceptions import *
 
 # The following regex patterns were taken/modified from version 1.4.1 of the 'wheel_filename' package
 # located at 'https://github.com/jwodder/wheel-filename'.
@@ -23,6 +23,7 @@ TAGRGX = re.compile(
     r"-(?P<platform_tags>[\w\d\*]+(?:\.[\w\d]+)*)"
 )
 
+
 def _download(url: str, dest: str) -> Tuple[int, Optional[str]]:
     """Download a binary file from a given URL. Do not use this function directly."""
     # download file and store bytes
@@ -30,12 +31,13 @@ def _download(url: str, dest: str) -> Tuple[int, Optional[str]]:
     data = request_obj.read()
 
     # enforce that we downloaded the correct file, and no corruption took place
-    from hashlib import md5
-
     data_hash = md5(data).hexdigest()
     cloud_hash = request_obj.headers["ETag"].strip('"')
     if data_hash != cloud_hash:
-        print("File hash doesn't match, and the file may have been corrupted. Please try again...", file=sys.stderr)
+        print(
+            "File hash doesn't match, and the file may have been corrupted. Please try again...",
+            file=sys.stderr,
+        )
         raise SystemExit(1)
 
     # write bytes to destination and return
@@ -48,7 +50,7 @@ def _download(url: str, dest: str) -> Tuple[int, Optional[str]]:
 def download_dist(
     pkg: PackageObject,
     dest: str,
-    format: Optional[str] = None,
+    whl_format: Optional[str] = None,
     dist_type: Optional[str] = None,
 ) -> int:
     """
@@ -57,29 +59,35 @@ def download_dist(
 
     if dist_type is None:
         dist_type = "bdist_wheel"
-    
-    if dist_type != "bdist_wheel" and format:
-        print(f"Specified custom .whl format, but requested '{dist_type}'. Ignoring...", file=sys.stderr)
+
+    if dist_type != "bdist_wheel" and whl_format:
+        print(
+            f"Specified custom .whl format, but requested '{dist_type}'. Ignoring...",
+            file=sys.stderr,
+        )
 
     if dist_type == "bdist_wheel":
-        if format is None:
-            format = "*-*-*-*"
-        _format = TAGRGX.match(format)
-        if _format is None:
-            print("Improper format used. Should be '{build_tag}-{python_tag}-{abi_tag}-{platform_tag}'", file=sys.stderr)
-            print(f"Recieved: '{format}'")
+        if whl_format is None:
+            whl_format = "*-*-*-*"
+        _whl_format = TAGRGX.match(whl_format)
+        if _whl_format is None:
+            print(
+                "Improper format used. Should be '{build_tag}-{python_tag}-{abi_tag}-{platform_tag}'",
+                file=sys.stderr,
+            )
+            print(f"Recieved: '{whl_format}'")
             return 1
 
         flagged = {
             "build": None,
             "python_tags": None,
             "abi_tags": None,
-            "platform_tags": None
+            "platform_tags": None,
         }
         # parse format string
         for k in flagged.keys():
-            if _format.group(k) != '*':
-                flagged[k] = _format.group(k)
+            if _whl_format.group(k) != "*":
+                flagged[k] = _whl_format.group(k)
 
     # search for requested distribution type in pkg.urls
     # and download distribution
@@ -89,8 +97,8 @@ def download_dist(
         if url.packagetype == dist_type:
             if dist_type == "bdist_wheel":
                 whl_match = WHLRGX.match(url.filename)
-                for k in flagged.keys():
-                    if flagged[k] is not None and flagged[k] != whl_match.group(k):
+                for k, v in flagged.items():
+                    if v is not None and v != whl_match.group(k):
                         bad_key = True
                         break
                 if bad_key:
@@ -104,8 +112,8 @@ def download_dist(
             break
     if not success:
         print(
-            f'Unable to find a release of package \'{pkg.release_name}\' with the given parameters:\n'
-            f'\tWheel format: \'{format}\'\n'
-            f'\tPackage type: \'{dist_type}\''
+            f"Unable to find a release of package '{pkg.release_name}' with the given parameters:\n"
+            f"\tWheel format: '{whl_format}'\n"
+            f"\tPackage type: '{dist_type}'"
         )
     return int(not success)

@@ -73,24 +73,24 @@ def main():
         if check_return != 2:
             return check_return
     except exceptions.PyPIAPIError as err:
-        print(f"otlet: " + err.__str__(), file=sys.stderr)
+        print("otlet: " + str(err), file=sys.stderr)
         return 1
 
     def generate_release_date(dto) -> str:
         if dto:
-            ar_date = arrow.get(dto).to('local')
+            ar_date = arrow.get(dto).to("local")
             return f"{ar_date.humanize()} ({ar_date.strftime('%Y-%m-%d at %H:%M')})"
         return "Unknown"
 
     def generate_dep_list(deps: List[PackageDependencyObject]) -> str:
-        dstr = ''
+        dstr = ""
         if not deps:
             return dstr
         for dep in deps:
             dstr += f"\t\t{dep.name}"
             if dep.version_constraints:
                 dstr += f" ({', '.join(dep.version_constraints)})"
-            dstr += '\n'
+            dstr += "\n"
         return dstr
 
     def get_notice_count():
@@ -99,7 +99,9 @@ def main():
             count += 1
         if pkg.info.yanked:
             count += 1
-        if pkg.info.requires_python and not DEPENDENCY_ENVIRONMENT_MARKERS["python_full_version"].fits_constraints(pkg.info.requires_python):
+        if pkg.info.requires_python and not DEPENDENCY_ENVIRONMENT_MARKERS[
+            "python_full_version"
+        ].fits_constraints(pkg.info.requires_python):
             count += 1
         if count:
             return f"\n\u001b[1m\u001b[3m\u001b[33m**{count}**\u001b[0m\u001b[33m notice(s) for this release.\n    - Use '--notices' for more information\u001b[0m\n"
@@ -128,6 +130,9 @@ def run_cli():
     try:
         code = main()
     except urllib.error.URLError:
-        print("Unable to connect to PyPI... Check connection and try again.", file=sys.stderr)
+        print(
+            "Unable to connect to PyPI... Check connection and try again.",
+            file=sys.stderr,
+        )
         raise SystemExit(1)
     raise SystemExit(code)
