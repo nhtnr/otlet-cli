@@ -85,23 +85,24 @@ def print_notices(pkg: PackageObject):
         else:
             color = "\u001b[33m"
         print(
-            f"\t\u001b[30;1m- This version has \u001b[1m{color}{VCOUNT}\u001b[0m\u001b[30;1m known security vulnerabilities, use the '--vulnerabilities' flag to view them\u001b[0m\n"
+            f"\t\u001b[37m- This version has \u001b[1m{color}{VCOUNT}\u001b[0m\u001b[37m known security vulnerabilities.\n\t\t\u001b[37;1m- These can be viewed with the \"--vulns\" flag.\u001b[0m"
         )
         count += 1
     if pkg.info.yanked:
         print(
-            f"\t\u001b[30;1m- This version has been yanked from PyPI:\n\t\t\u001b[37;1m'{pkg.info.yanked_reason}'\u001b[0m\n"
+            f"\t\u001b[37m- This version has been yanked from PyPI:\n\t\t\u001b[37;1m- '{pkg.info.yanked_reason}'\u001b[0m"
         )
         count += 1
     if pkg.info.requires_python and not DEPENDENCY_ENVIRONMENT_MARKERS[
         "python_full_version"
-    ].fits_constraints(">=3.10"):
+    ].fits_constraints(pkg.info.requires_python):
         print(
-            f"\t\u001b[30;1m- '{pkg.release_name}' is incompatible with your current Python version. \n\t\t\u001b[37;1m(Using '{DEPENDENCY_ENVIRONMENT_MARKERS['python_full_version']}', requires '{pkg.info.requires_python}')\u001b[0m"
+            f"\t\u001b[37m- '{pkg.release_name}' is incompatible with your current Python version. \n\t\t\u001b[37;1m- (Using '{DEPENDENCY_ENVIRONMENT_MARKERS['python_full_version']}', requires '{pkg.info.requires_python}')\u001b[0m"
         )
         count += 1
     if not count:
         print("\t\u001b[32m- No notices for this release! :)\u001b[0m")
+    print()
     return 0
 
 

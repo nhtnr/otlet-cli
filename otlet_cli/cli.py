@@ -104,7 +104,7 @@ def main():
         ].fits_constraints(pkg.info.requires_python):
             count += 1
         if count:
-            return f"\n\u001b[1m\u001b[3m\u001b[33m**{count}**\u001b[0m\u001b[33m notice(s) for this release.\n    - Use '--notices' for more information\u001b[0m\n"
+            return f"\n\u001b[33;1;3m**{count}**\u001b[0m\u001b[33m notice(s) for this release.\n    - Use '--notices' for more information\u001b[0m\n"
         return ""
 
     msg = textwrap.dedent(
