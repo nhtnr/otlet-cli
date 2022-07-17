@@ -92,9 +92,19 @@ def main():
             dstr += '\n'
         return dstr
 
+    def get_notice_count():
+        count = 0
+        if pkg.vulnerabilities:
+            count += 1
+        if pkg.info.yanked:
+            count += 1
+        if count:
+            return f"\n\u001b[1m\u001b[3m\u001b[33m**{count}**\u001b[0m\u001b[33m notice(s) for this release.\n    - Use '--notices' for more information\u001b[0m\n"
+        return ""
+
     msg = textwrap.dedent(
         f"""Info for package {pkg.release_name}
-
+{get_notice_count()}
     Summary: {pkg.info.summary}
     Release date: {generate_release_date(pkg.upload_time)}
     Homepage: {pkg.info.home_page}
@@ -107,10 +117,6 @@ def main():
     Dependencies: {pkg.dependency_count} \n {generate_dep_list(pkg.dependencies)}
     """
     )
-    if pkg.vulnerabilities:
-        msg += f"\u001b[1m\u001b[31m\n== WARNING ==\u001b[0m\nThis version has \u001b[1m\u001b[31m{len(pkg.vulnerabilities)}\u001b[0m known security vulnerabilities, use the '--vulnerabilities' flag to view them\n"
-    if pkg.info.yanked:
-        msg += f"\u001b[1m\u001b[33m\n== NOTE ==\u001b[0m\nThis version has been yanked from PyPI.\n\t Reason: '{pkg.info.yanked_reason}'\n"
     print(msg)
     return 0
 

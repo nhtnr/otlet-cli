@@ -49,19 +49,20 @@ def _print_vulns(pkg: PackageObject):
         print("\u001b[32mNo vulnerabilities found for this release! :)\u001b[0m")
         return 0
 
+    VULNERABILITY_COUNT = len(pkg.vulnerabilities)
     os.system("clear" if os.name != "nt" else "cls")
 
     for vuln in pkg.vulnerabilities:
         print(
-            "\u001b[1m\u001b[31m==",
-            len(pkg.vulnerabilities),
+            f"\u001b[1m\u001b[31m==",
+            VULNERABILITY_COUNT,
             "security vulnerabilities found for",
             pkg.release_name + '!',
             "==\n\u001b[0m",
         )
 
         print(
-            pkg.vulnerabilities.index(vuln) + 1, "/", len(pkg.vulnerabilities), sep=""
+            pkg.vulnerabilities.index(vuln) + 1, "/", VULNERABILITY_COUNT, sep=""
         )
         msg = ""
         msg += f"\u001b[1m{vuln.id} ({', '.join(vuln.aliases).strip(', ')})\u001b[0m\n"
@@ -76,9 +77,27 @@ def _print_vulns(pkg: PackageObject):
 
     return 0
 
+def print_notices(pkg: PackageObject):
+    print(f"Notices for package '{pkg.release_name}':\n")
+    count = 0
+    if pkg.vulnerabilities:
+        VCOUNT = len(pkg.vulnerabilities)
+        if VCOUNT >= 10:
+            color = '\u001b[31m'
+        else:
+            color = '\u001b[33m'
+        print(f"\t\u001b[30;1m- This version has \u001b[1m{color}{len(pkg.vulnerabilities)}\u001b[0m\u001b[30;1m known security vulnerabilities, use the '--vulnerabilities' flag to view them\u001b[0m\n")
+        count += 1
+    if pkg.info.yanked:
+        print(f"\t\u001b[30;1m- This version has been yanked from PyPI:\n\t\t\u001b[37;1m'{pkg.info.yanked_reason}'\u001b[0m\n")
+        count += 1
+    if not count:
+        print("\t\u001b[32m- No notices for this release! :)\u001b[0m")
+    return 0
+
 def check_args(args: argparse.Namespace) -> Tuple[PackageObject, int]:
     code = 2
-    if args.package_version == "stable":
+    if "releases" in sys.argv or args.package_version == "stable":
         pk_object = PackageObject(args.package[0])
     else:
         pk_object = PackageObject(args.package[0], args.package_version)
@@ -107,6 +126,8 @@ def check_args(args: argparse.Namespace) -> Tuple[PackageObject, int]:
         for e in pk_object.info.possible_extras:
             print(f"\t- {pk_object.canonicalized_name}[{e}]")
         code = 0
+    elif args.notices:
+        code = print_notices(pk_object)
     return (pk_object, code)
 
 

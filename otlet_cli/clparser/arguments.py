@@ -24,6 +24,11 @@ ARGUMENT_LIST: Dict[str, Any] = {
         "help": "TBD",
         "action": "store_true",
     },
+    "notices": {
+        "opts": ["-n", "--notices"],
+        "help": "TBD",
+        "action": "store_true"
+    },
     "urls": {
         "opts": ["--urls"],
         "help": "print list of all relevant URLs for package",
