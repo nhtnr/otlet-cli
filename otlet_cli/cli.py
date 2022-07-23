@@ -35,7 +35,7 @@ from otlet import exceptions
 from otlet.api import PackageDependencyObject
 from otlet.markers import DEPENDENCY_ENVIRONMENT_MARKERS
 
-from . import util, __version__
+from . import util, __version__, config
 from .clparser.options import OtletArgumentParser
 
 
@@ -57,6 +57,7 @@ def init_args() -> Optional[Namespace]:
     else:
         args.__dict__["subparsers"] = []
 
+    config["verbose"] = args.verbose
     return args
 
 
@@ -135,4 +136,6 @@ def run_cli():
             file=sys.stderr,
         )
         raise SystemExit(1)
+    if code != 0:
+        util.verbose_print(f"Otlet failed with exit code: {code}")
     raise SystemExit(code)

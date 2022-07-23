@@ -4,12 +4,15 @@ from .arguments import *
 
 if "releases" in sys.argv:
     RELEASES_ARGUMENT_LIST["package"] = PACKAGE_ARGUMENT
+    RELEASES_ARGUMENT_LIST["verbose"] = VERBOSE_ARGUMENT
 elif "download" in sys.argv:
     DOWNLOAD_ARGUMENTS_LIST["package"] = PACKAGE_ARGUMENT
     DOWNLOAD_ARGUMENTS_LIST["package_version"] = PACKAGE_VERSION_ARGUMENT
+    DOWNLOAD_ARGUMENTS_LIST["verbose"] = VERBOSE_ARGUMENT
 else:
     ARGUMENT_LIST["package"] = PACKAGE_ARGUMENT
     ARGUMENT_LIST["package_version"] = PACKAGE_VERSION_ARGUMENT
+    ARGUMENT_LIST["verbose"] = VERBOSE_ARGUMENT
 
 
 class OtletArgumentParser(ArgumentParser):

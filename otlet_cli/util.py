@@ -7,7 +7,7 @@ from typing import Optional, Tuple
 from otlet.api import PackageObject
 from otlet.packaging.version import parse, etc, Version
 from otlet.markers import DEPENDENCY_ENVIRONMENT_MARKERS
-from . import download
+from . import download, config
 
 
 def _print_releases(args: Optional[argparse.Namespace] = None):
@@ -141,5 +141,9 @@ def check_args(args: argparse.Namespace) -> Tuple[PackageObject, int]:
         code = print_notices(pk_object)
     return (pk_object, code)
 
+def verbose_print(msg: str) -> None:
+    if config["verbose"]:
+        print(msg, file=sys.stderr)
+    return
 
 __all__ = ["check_args"]

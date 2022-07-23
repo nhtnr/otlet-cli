@@ -4,6 +4,7 @@ from hashlib import md5
 from urllib.request import urlopen
 from typing import Tuple, Optional
 from otlet import PackageObject
+import threading
 
 # The following regex patterns were taken/modified from version 1.4.1 of the 'wheel_filename' package
 # located at 'https://github.com/jwodder/wheel-filename'.
@@ -22,36 +23,44 @@ TAGRGX = re.compile(
     r"-(?P<abi_tags>[\w\d\*]+(?:\.[\w\d]+)*)"
     r"-(?P<platform_tags>[\w\d\*]+(?:\.[\w\d]+)*)"
 )
+msg_board = {
+    "_download": {
+        "bytes_read": 0
+    }
+}
 
-
-def _download(url: str, dest: str) -> Tuple[int, Optional[str]]:
+def _download(url: str, dest: str) -> None:
     """Download a binary file from a given URL. Do not use this function directly."""
     # download file and store bytes
+    msg_board["_download"]["status"] = -1
     request_obj = urlopen(url)
-    data = request_obj.read()
+    f = open(dest, "wb")
+    ONE_MB = 1048576
+    while True:
+        j = request_obj.read(ONE_MB) # read one 1M chunk at a time
+        if j == b'':
+            break
+        f.write(j)
+        msg_board["_download"]["bytes_read"] += ONE_MB
+    f.close()
 
     # enforce that we downloaded the correct file, and no corruption took place
-    data_hash = md5(data).hexdigest()
+    with open(dest, 'rb') as f:
+        data_hash = md5(f.read()).hexdigest()
     cloud_hash = request_obj.headers["ETag"].strip('"')
     if data_hash != cloud_hash:
-        print(
-            "File hash doesn't match, and the file may have been corrupted. Please try again...",
-            file=sys.stderr,
-        )
-        raise SystemExit(1)
+        msg_board["_download"]["error"] = "The file was corrupted during download. Please try again..."
+        msg_board["_download"]["status"] = 1
+        return
 
-    # write bytes to destination and return
-    bw = 0
-    with open(dest, "wb") as f:
-        bw = f.write(data)
-        return bw, f.name
+    msg_board["_download"]["status"] = 0
 
 
 def download_dist(
     pkg: PackageObject,
     dest: str,
     whl_format: Optional[str] = None,
-    dist_type: Optional[str] = None,
+    dist_type: Optional[str] = None
 ) -> int:
     """
     Download a specified package's distribution file.
@@ -106,8 +115,30 @@ def download_dist(
                     continue
             if dest is None:
                 dest = url.filename
-            s, f = _download(url.url, dest)
-            print("Wrote", s, "bytes to", f)
+            
+            # this can possibly be done in a 'safer' manner with async,
+            # but i'm too lazy rn and it doesn't seem like *that* much of
+            # a pressing issue
+            th = threading.Thread(target=_download, args=(url.url, dest))
+            th.start()
+            import time
+            l = ['/', '|', '\\', '-']
+            count = 0
+            mb_size = round(url.size/1.049e+6, 1)
+            while th.is_alive():
+                print(f"[{l[count]}] [{round(msg_board['_download']['bytes_read']/1.049e+6, 1)} / {mb_size} MB] Downloading {pkg.release_name} ({dist_type})...", end = "\r")
+                count += 1
+                if count == len(l):
+                    count = 0
+                time.sleep(0.1)
+            print("\33[2K", end="\r")
+            if msg_board["_download"]["status"] == 0:
+                print(f"Downloaded {pkg.release_name} ({dist_type}) to {dest}!")
+            else:
+                print(msg_board["_download"]["error"])
+                return msg_board['_download']['status']
+            #s, f = _download(url.url, dest)
+            #print("Wrote", s, "bytes to", f)
             success = True
             break
     if not success:

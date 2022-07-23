@@ -1,6 +1,12 @@
 from typing import Dict, Any
 from .actions import OtletVersionAction
 
+VERBOSE_ARGUMENT: Dict[str, Any] = {
+    "opts": ["--verbose"],
+    "help": "be verbose",
+    "action": "store_true"
+}
+
 PACKAGE_ARGUMENT: Dict[str, Any] = {
     "opts": [],
     "metavar": ("package_name"),
@@ -105,4 +111,9 @@ DOWNLOAD_ARGUMENTS_LIST: Dict[str, Any] = {
         "nargs": "?",
         "action": "store",
     },
+    #"list_dls": {
+    #    "opts": ["-l", "--list"],
+    #    "help": "TBD",
+    #    "action": "store_true",
+    #}
 }
