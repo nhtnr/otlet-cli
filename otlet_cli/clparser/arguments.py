@@ -93,7 +93,6 @@ DOWNLOAD_ARGUMENTS_LIST: Dict[str, Any] = {
     "dist_type": {
         "opts": ["-d", "--dist"],
         "metavar": ("DIST_TYPE"),
-        "default": "bdist_wheel",
         "help": "Type of distribution to download (Default: bdist_wheel)",
         "nargs": "?",
         "action": "store",

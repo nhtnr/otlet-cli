@@ -93,14 +93,22 @@ def download_dist(
     """
 
     dists = get_dists(pkg)
-    if len(dists) > 1:
-        util._print_distributions(pkg, dists)
+    dist_types = [x for x in dists.items() if x[1]["dist_type"] == dist_type]
+    dist_type_count = len(dist_types)
+    if any((not dist_type, dist_type_count > 1)) and len(dists) > 1:
+        util._print_distributions(pkg, dists, dist_type)
         while True:
             try:
-                dl_number = int(input("\nSpecify a number to download: "))
+                dl_number = int(input("Specify a number to download: "))
                 break
             except ValueError:
                 print("ERROR: Value must be an integer...", file = sys.stderr)
+    elif dist_type: # fall here if dist_type is given, and only one distribution for dist_type exists, i.e. 'sdist'
+        try:
+            dl_number = dist_types[0][0]
+        except IndexError:
+            print(f"No distributions of type '{dist_type}' found for {pkg.release_name}", file=sys.stderr)
+            raise SystemExit(1)
     else: # if only one distribution is available, no need to manually select it
         dl_number = 1
 
@@ -139,5 +147,5 @@ def download_dist(
             break
     if not success:
         # rare, but might as well cover it
-        print(f"No distributions found for {pkg.release_name}")
+        print(f"No distributions found for {pkg.release_name}", file=sys.stderr)
     return int(not success)

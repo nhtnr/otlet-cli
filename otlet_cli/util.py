@@ -42,37 +42,47 @@ def _print_releases(args: Optional[argparse.Namespace] = None):
 
     return 0
 
-def _print_distributions(pkg: PackageObject, distributions: Optional[dict]=None):
-    if not distributions:
+def _print_distributions(pkg: PackageObject, distributions: Optional[dict]=None, dist_type: Optional[str]=None):
+    if distributions is None:
         distributions = download.get_dists(pkg)
-    print(
-        f"Wheels available for {pkg.release_name}:\n"
-        "\n[num] [size]\t[build] | [python_tag] | [abi_tag] | [platform_tag]"
-    )
-    last_num = 0
-    for num,whl in distributions.items():
-        if whl["dist_type"] != "bdist_wheel":
-            continue
-        print(
-            f"\u2500\u2500\u2500\u2500\u2500\n{num} "
-            f"({whl['converted_size']} {whl['size_measurement']})"
-            f"\t{whl['build']} | {whl['python_tags']} | {whl['abi_tags']} | {whl['platform_tags']}"
-        )
-        last_num = num
+    if not distributions:
+        print(f"No distributions found for {pkg.release_name}", file=sys.stderr)
+        return 1
 
-    if len(distributions) > last_num: # only do this part if non-wheel distributions are available
+    last_num = 0
+    if (distributions) and not dist_type or dist_type == "bdist_wheel":
         print(
-            f"\nOther distributions available for {pkg.release_name}:\n"
+            f"Wheels available for {pkg.release_name}:\n"
+            "\n[num] [size]\t[build] | [python_tag] | [abi_tag] | [platform_tag]"
+        )
+        for num,whl in distributions.items():
+            if whl["dist_type"] != "bdist_wheel":
+                continue
+            print(
+                f"\u2500\u2500\u2500\u2500\u2500\n{num} "
+                f"({whl['converted_size']} {whl['size_measurement']})"
+                f"\t{whl['build']} | {whl['python_tags']} | {whl['abi_tags']} | {whl['platform_tags']}"
+            )
+            last_num = num
+        print()
+
+    if len(distributions) > last_num and dist_type != "bdist_wheel": 
+        # only do this part if non-wheel distributions are available, 
+        # or non-wheel dist_type is requested
+        print(
+            f"'{dist_type if dist_type else 'Other'}' distributions available for {pkg.release_name}:\n"
             "\n[num] [size]\t[distribution_type] | [filename]"
         )
         for num, dist in distributions.items():
-            if dist["dist_type"] == "bdist_wheel":
+            if dist["dist_type"] == "bdist_wheel" or (dist_type and dist["dist_type"] != dist_type):
                 continue
             print(
                 f"\u2500\u2500\u2500\u2500\u2500\n{num} "
                 f"({dist['converted_size']} {dist['size_measurement']})"
                 f"\t{dist['dist_type']} | {dist['filename']}"
             )
+
+    return 0
 
 def _print_vulns(pkg: PackageObject):
     if pkg.vulnerabilities is None:
@@ -149,8 +159,7 @@ def check_args(args: argparse.Namespace) -> Tuple[PackageObject, int]:
             code = _print_releases(args)
         if "download" in sys.argv:
             if args.list_whls:
-                _print_distributions(pk_object)
-                code = 0
+                code = _print_distributions(pk_object, dist_type=args.dist_type)
             else:
                 code = download.download_dist(
                     pk_object, args.dest, args.dist_type
