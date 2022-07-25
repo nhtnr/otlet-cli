@@ -42,6 +42,37 @@ def _print_releases(args: Optional[argparse.Namespace] = None):
 
     return 0
 
+def _print_distributions(pkg: PackageObject, distributions: Optional[dict]=None):
+    if not distributions:
+        distributions = download.get_dists(pkg)
+    print(
+        f"Wheels available for {pkg.release_name}:\n"
+        "\n[num] [size]\t[build] | [python_tag] | [abi_tag] | [platform_tag]"
+    )
+    last_num = 0
+    for num,whl in distributions.items():
+        if whl["dist_type"] != "bdist_wheel":
+            continue
+        print(
+            f"\u2500\u2500\u2500\u2500\u2500\n{num} "
+            f"({whl['converted_size']} {whl['size_measurement']})"
+            f"\t{whl['build']} | {whl['python_tags']} | {whl['abi_tags']} | {whl['platform_tags']}"
+        )
+        last_num = num
+
+    if len(distributions) > last_num: # only do this part if non-wheel distributions are available
+        print(
+            f"\nOther distributions available for {pkg.release_name}:\n"
+            "\n[num] [size]\t[distribution_type] | [filename]"
+        )
+        for num, dist in distributions.items():
+            if dist["dist_type"] == "bdist_wheel":
+                continue
+            print(
+                f"\u2500\u2500\u2500\u2500\u2500\n{num} "
+                f"({dist['converted_size']} {dist['size_measurement']})"
+                f"\t{dist['dist_type']} | {dist['filename']}"
+            )
 
 def _print_vulns(pkg: PackageObject):
     if pkg.vulnerabilities is None:
@@ -75,7 +106,7 @@ def _print_vulns(pkg: PackageObject):
     return 0
 
 
-def print_notices(pkg: PackageObject):
+def _print_notices(pkg: PackageObject):
     print(f"Notices for package '{pkg.release_name}':\n")
     count = 0
     if pkg.vulnerabilities:
@@ -117,9 +148,13 @@ def check_args(args: argparse.Namespace) -> Tuple[PackageObject, int]:
         if "releases" in sys.argv:
             code = _print_releases(args)
         if "download" in sys.argv:
-            code = download.download_dist(
-                pk_object, args.dest, args.whl_format, args.dist_type
-            )
+            if args.list_whls:
+                _print_distributions(pk_object)
+                code = 0
+            else:
+                code = download.download_dist(
+                    pk_object, args.dest, args.dist_type
+                )
     elif args.vulnerabilities:
         # List all known vulnerabilities for a release.
         code = _print_vulns(pk_object)
@@ -138,7 +173,7 @@ def check_args(args: argparse.Namespace) -> Tuple[PackageObject, int]:
             print(f"\t- {pk_object.canonicalized_name}[{extra}]")
         code = 0
     elif args.notices:
-        code = print_notices(pk_object)
+        code = _print_notices(pk_object)
     return (pk_object, code)
 
 def verbose_print(msg: str) -> None:

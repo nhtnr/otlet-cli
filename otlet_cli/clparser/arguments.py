@@ -93,6 +93,7 @@ DOWNLOAD_ARGUMENTS_LIST: Dict[str, Any] = {
     "dist_type": {
         "opts": ["-d", "--dist"],
         "metavar": ("DIST_TYPE"),
+        "default": "bdist_wheel",
         "help": "Type of distribution to download (Default: bdist_wheel)",
         "nargs": "?",
         "action": "store",
@@ -104,16 +105,9 @@ DOWNLOAD_ARGUMENTS_LIST: Dict[str, Any] = {
         "nargs": "?",
         "action": "store",
     },
-    "whl_format": {
-        "opts": ["-f", "--whl-format"],
-        "metavar": ("FORMAT"),
-        "help": "Match format for desired wheel.   ({build_tag}-{python_tag}-{abi_tag}-{platform_tag}, wildcard=*)",
-        "nargs": "?",
-        "action": "store",
+    "list_whls": {
+        "opts": ["-l", "--list"],
+        "help": "List all available wheels for a project.",
+        "action": "store_true",
     },
-    #"list_dls": {
-    #    "opts": ["-l", "--list"],
-    #    "help": "TBD",
-    #    "action": "store_true",
-    #}
 }

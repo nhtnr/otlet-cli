@@ -34,6 +34,7 @@ import arrow
 from otlet import exceptions
 from otlet.api import PackageDependencyObject
 from otlet.markers import DEPENDENCY_ENVIRONMENT_MARKERS
+from otlet.packaging.version import InvalidVersion
 
 from . import util, __version__, config
 from .clparser.options import OtletArgumentParser
@@ -100,6 +101,7 @@ def main():
             count += 1
         if pkg.info.yanked:
             count += 1
+
         if pkg.info.requires_python and not DEPENDENCY_ENVIRONMENT_MARKERS[
             "python_full_version"
         ].fits_constraints(pkg.info.requires_python):

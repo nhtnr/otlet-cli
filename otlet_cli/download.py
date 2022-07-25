@@ -1,10 +1,12 @@
 import re
+import os
 import sys
 from hashlib import md5
 from urllib.request import urlopen
 from typing import Tuple, Optional
 from otlet import PackageObject
 import threading
+from . import util
 
 # The following regex patterns were taken/modified from version 1.4.1 of the 'wheel_filename' package
 # located at 'https://github.com/jwodder/wheel-filename'.
@@ -29,23 +31,47 @@ msg_board = {
     }
 }
 
+def get_dists(pkg: PackageObject) -> dict:
+    distributions = {}
+    for num,url in enumerate(pkg.urls):
+        _match = WHLRGX.match(url.filename)
+        if not _match:
+            distributions[num+1] = {
+                "filename": url.filename,
+                "dist_type": url.packagetype,
+                "converted_size": round(url.size/1.049e+6, 1) if url.size > 1048576 else round(url.size/1024, 1),
+                "size_measurement": "MiB" if url.size > 1048576 else "KiB"
+            }
+            continue
+        distributions[num+1] = {
+            "filename": url.filename,
+            "dist_type": "bdist_wheel",
+            "build": _match.group("build"),
+            "python_tags": _match.group("python_tags"),
+            "abi_tags": _match.group("abi_tags"),
+            "platform_tags": _match.group("platform_tags"),
+            "converted_size": round(url.size/1.049e+6, 1) if url.size > 1048576 else round(url.size/1024, 1),
+            "size_measurement": "MiB" if url.size > 1048576 else "KiB"
+        }
+
+    return distributions
+
 def _download(url: str, dest: str) -> None:
     """Download a binary file from a given URL. Do not use this function directly."""
     # download file and store bytes
     msg_board["_download"]["status"] = -1
     request_obj = urlopen(url)
-    f = open(dest, "wb")
-    ONE_MB = 1048576
+    f = open(dest + '.part', "wb")
     while True:
-        j = request_obj.read(ONE_MB) # read one 1M chunk at a time
+        j = request_obj.read(1024*3) # read one 3K chunk at a time
         if j == b'':
             break
         f.write(j)
-        msg_board["_download"]["bytes_read"] += ONE_MB
+        msg_board["_download"]["bytes_read"] += 1024*3
     f.close()
 
     # enforce that we downloaded the correct file, and no corruption took place
-    with open(dest, 'rb') as f:
+    with open(dest + '.part', 'rb') as f:
         data_hash = md5(f.read()).hexdigest()
     cloud_hash = request_obj.headers["ETag"].strip('"')
     if data_hash != cloud_hash:
@@ -53,69 +79,41 @@ def _download(url: str, dest: str) -> None:
         msg_board["_download"]["status"] = 1
         return
 
+    os.rename(dest + '.part', dest) # remove temp tag
     msg_board["_download"]["status"] = 0
 
 
 def download_dist(
     pkg: PackageObject,
     dest: str,
-    whl_format: Optional[str] = None,
-    dist_type: Optional[str] = None
+    dist_type: str
 ) -> int:
     """
     Download a specified package's distribution file.
     """
 
-    if dist_type is None:
-        dist_type = "bdist_wheel"
-
-    if dist_type != "bdist_wheel" and whl_format:
-        print(
-            f"Specified custom .whl format, but requested '{dist_type}'. Ignoring...",
-            file=sys.stderr,
-        )
-
-    if dist_type == "bdist_wheel":
-        if whl_format is None:
-            whl_format = "*-*-*-*"
-        _whl_format = TAGRGX.match(whl_format)
-        if _whl_format is None:
-            print(
-                "Improper format used. Should be '{build_tag}-{python_tag}-{abi_tag}-{platform_tag}'",
-                file=sys.stderr,
-            )
-            print(f"Recieved: '{whl_format}'")
-            return 1
-
-        flagged = {
-            "build": None,
-            "python_tags": None,
-            "abi_tags": None,
-            "platform_tags": None,
-        }
-        # parse format string
-        for k in flagged.keys():
-            if _whl_format.group(k) != "*":
-                flagged[k] = _whl_format.group(k)
+    dists = get_dists(pkg)
+    if len(dists) > 1:
+        util._print_distributions(pkg, dists)
+        while True:
+            try:
+                dl_number = int(input("\nSpecify a number to download: "))
+                break
+            except ValueError:
+                print("ERROR: Value must be an integer...", file = sys.stderr)
+    else: # if only one distribution is available, no need to manually select it
+        dl_number = 1
 
     # search for requested distribution type in pkg.urls
     # and download distribution
     success = False
-    bad_key = False
     for url in pkg.urls:
-        if url.packagetype == dist_type:
-            if dist_type == "bdist_wheel":
-                whl_match = WHLRGX.match(url.filename)
-                for k, v in flagged.items():
-                    if v is not None and v != whl_match.group(k):
-                        bad_key = True
-                        break
-                if bad_key:
-                    bad_key = False
-                    continue
+        if url.filename == dists[dl_number]["filename"]:
             if dest is None:
                 dest = url.filename
             
+            ### Download distribution from PyPI CDN
+            #
             # this can possibly be done in a 'safer' manner with async,
             # but i'm too lazy rn and it doesn't seem like *that* much of
             # a pressing issue
@@ -124,27 +122,22 @@ def download_dist(
             import time
             l = ['/', '|', '\\', '-']
             count = 0
-            mb_size = round(url.size/1.049e+6, 1)
             while th.is_alive():
-                print(f"[{l[count]}] [{round(msg_board['_download']['bytes_read']/1.049e+6, 1)} / {mb_size} MB] Downloading {pkg.release_name} ({dist_type})...", end = "\r")
+                size_read = round(msg_board['_download']['bytes_read']/1.049e+6, 1) if dists[dl_number]["size_measurement"] == "MiB" else round(msg_board['_download']['bytes_read']/1024, 1)
+                print(f"[{l[count]}] [{size_read} / {dists[dl_number]['converted_size']} {dists[dl_number]['size_measurement']}] Downloading {pkg.release_name} ({dists[dl_number]['dist_type']})...", end = "\r")
                 count += 1
                 if count == len(l):
                     count = 0
                 time.sleep(0.1)
             print("\33[2K", end="\r")
             if msg_board["_download"]["status"] == 0:
-                print(f"Downloaded {pkg.release_name} ({dist_type}) to {dest}!")
+                print(f"Downloaded {pkg.release_name} ({dists[dl_number]['dist_type']}) to {dest}!")
             else:
                 print(msg_board["_download"]["error"])
                 return msg_board['_download']['status']
-            #s, f = _download(url.url, dest)
-            #print("Wrote", s, "bytes to", f)
             success = True
             break
     if not success:
-        print(
-            f"Unable to find a release of package '{pkg.release_name}' with the given parameters:\n"
-            f"\tWheel format: '{whl_format}'\n"
-            f"\tPackage type: '{dist_type}'"
-        )
+        # rare, but might as well cover it
+        print(f"No distributions found for {pkg.release_name}")
     return int(not success)
