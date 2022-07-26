@@ -1,8 +1,44 @@
+import re
 import sys
 from argparse import Action, SUPPRESS
 from .. import __version__
 from otlet import __version__ as api_version
 
+class OtletWheelDownloadOptsAction(Action):
+    def __init__(
+        self,
+        option_strings,
+        dest=SUPPRESS,
+        default=None,
+        help="supply options for which wheels to show, i.e. 'python_tags:cp39' to only show wheels with the 'cp39' attribute for 'python_tags'"
+    ):
+        super().__init__(
+            option_strings=option_strings,
+            metavar=("WHL_OPTS"),
+            dest=dest,
+            default=default,
+            nargs='?',
+            help=help,
+        )
+    
+    def __call__(self, parser, namespace, values, option_string):
+        # create dictionary for user-desired options pattern matching
+        acceptable_options = [
+            "build",
+            "python_tags",
+            "abi_tags",
+            "platform_tags"
+        ]
+        STAR = '(?:\S+)'
+        opt_dict = {}
+        for i in values.split(','):
+            opt_match = re.match(r'(\S+):(\S+)', i)
+            opt_value = re.compile(opt_match.group(2).replace('*', STAR))
+            if opt_match.group(1) not in acceptable_options:
+                print(f"error: unrecognized option '{opt_match.group(1)}'. ignoring...")
+                continue
+            opt_dict[opt_match.group(1)] = opt_value
+        setattr(namespace, "whl_options", opt_dict)
 
 class OtletVersionAction(Action):
     def __init__(

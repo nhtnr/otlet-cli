@@ -1,5 +1,5 @@
 from typing import Dict, Any
-from .actions import OtletVersionAction
+from .actions import OtletVersionAction, OtletWheelDownloadOptsAction
 
 VERBOSE_ARGUMENT: Dict[str, Any] = {
     "opts": ["--verbose"],
@@ -96,6 +96,10 @@ DOWNLOAD_ARGUMENTS_LIST: Dict[str, Any] = {
         "help": "Type of distribution to download (Default: bdist_wheel)",
         "nargs": "?",
         "action": "store",
+    },
+    "whl_options":{
+        "opts": ["-w", "--whl-options"],
+        "action": OtletWheelDownloadOptsAction,
     },
     "dest": {
         "opts": ["-o", "--output"],

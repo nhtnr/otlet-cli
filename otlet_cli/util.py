@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 import textwrap
 import argparse
@@ -42,9 +43,9 @@ def _print_releases(args: Optional[argparse.Namespace] = None):
 
     return 0
 
-def _print_distributions(pkg: PackageObject, distributions: Optional[dict]=None, dist_type: Optional[str]=None):
+def _print_distributions(pkg: PackageObject, distributions: Optional[dict]=None, dist_type: Optional[str]=None, opt_dict: Optional[dict]=None):
     if distributions is None:
-        distributions = download.get_dists(pkg)
+        distributions = download.get_dists(pkg, opt_dict)
     if not distributions:
         print(f"No distributions found for {pkg.release_name}", file=sys.stderr)
         return 1
@@ -63,7 +64,7 @@ def _print_distributions(pkg: PackageObject, distributions: Optional[dict]=None,
                 f"({whl['converted_size']} {whl['size_measurement']})"
                 f"\t{whl['build']} | {whl['python_tags']} | {whl['abi_tags']} | {whl['platform_tags']}"
             )
-            last_num = num
+            last_num += 1
         print()
 
     if len(distributions) > last_num and dist_type != "bdist_wheel": 
@@ -82,6 +83,7 @@ def _print_distributions(pkg: PackageObject, distributions: Optional[dict]=None,
                 f"\t{dist['dist_type']} | {dist['filename']}"
             )
 
+    print()
     return 0
 
 def _print_vulns(pkg: PackageObject):
@@ -159,10 +161,10 @@ def check_args(args: argparse.Namespace) -> Tuple[PackageObject, int]:
             code = _print_releases(args)
         if "download" in sys.argv:
             if args.list_whls:
-                code = _print_distributions(pk_object, dist_type=args.dist_type)
+                code = _print_distributions(pk_object, dist_type=args.dist_type, opt_dict=args.whl_options)
             else:
                 code = download.download_dist(
-                    pk_object, args.dest, args.dist_type
+                    pk_object, args.dest, args.dist_type, args.whl_options
                 )
     elif args.vulnerabilities:
         # List all known vulnerabilities for a release.

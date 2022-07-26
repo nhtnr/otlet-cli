@@ -31,7 +31,7 @@ msg_board = {
     }
 }
 
-def get_dists(pkg: PackageObject) -> dict:
+def get_dists(pkg: PackageObject, opt_dict: Optional[dict] = None) -> dict:
     distributions = {}
     for num,url in enumerate(pkg.urls):
         _match = WHLRGX.match(url.filename)
@@ -53,6 +53,20 @@ def get_dists(pkg: PackageObject) -> dict:
             "converted_size": round(url.size/1.049e+6, 1) if url.size > 1048576 else round(url.size/1024, 1),
             "size_measurement": "MiB" if url.size > 1048576 else "KiB"
         }
+
+    if not opt_dict:
+        return distributions
+
+    for key,dist in distributions.copy().items():
+        if dist["dist_type"] != "bdist_wheel": # ignore non-wheels for obvious reasons
+            continue
+        for opt,pattern in opt_dict.items():
+            if not dist[opt] or dist[opt].lower() == 'none' or dist[opt].lower() == 'any':
+                continue
+            is_match = pattern.match(dist[opt])
+            if not is_match:
+                distributions.pop(key)
+                break
 
     return distributions
 
@@ -86,13 +100,15 @@ def _download(url: str, dest: str) -> None:
 def download_dist(
     pkg: PackageObject,
     dest: str,
-    dist_type: str
+    dist_type: str,
+    opt_dict: Optional[dict]=None
 ) -> int:
     """
     Download a specified package's distribution file.
     """
 
-    dists = get_dists(pkg)
+    # get distributions and ask for user selection
+    dists = get_dists(pkg, opt_dict)
     dist_types = [x for x in dists.items() if x[1]["dist_type"] == dist_type]
     dist_type_count = len(dist_types)
     if any((not dist_type, dist_type_count > 1)) and len(dists) > 1:
