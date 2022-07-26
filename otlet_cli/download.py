@@ -3,7 +3,7 @@ import os
 import sys
 from hashlib import md5
 from urllib.request import urlopen
-from typing import Tuple, Optional
+from typing import Optional
 from otlet import PackageObject
 import threading
 from . import util
@@ -19,12 +19,6 @@ WHLRGX = re.compile(
     r"-(?P<platform_tags>[\w\d]+(?:\.[\w\d]+)*)"
     r"\.[Ww][Hh][Ll]"
 )
-TAGRGX = re.compile(
-    r"(?:(?P<build>[0-9\*][\w\d.]*))?"
-    r"-(?P<python_tags>[\w\d\*]+(?:\.[\w\d]+)*)"
-    r"-(?P<abi_tags>[\w\d\*]+(?:\.[\w\d]+)*)"
-    r"-(?P<platform_tags>[\w\d\*]+(?:\.[\w\d]+)*)"
-)
 msg_board = {
     "_download": {
         "bytes_read": 0
@@ -38,6 +32,7 @@ def get_dists(pkg: PackageObject, opt_dict: Optional[dict] = None) -> dict:
         if not _match:
             distributions[num+1] = {
                 "filename": url.filename,
+                "download_url": url.url,
                 "dist_type": url.packagetype,
                 "converted_size": round(url.size/1.049e+6, 1) if url.size > 1048576 else round(url.size/1024, 1),
                 "size_measurement": "MiB" if url.size > 1048576 else "KiB"
@@ -45,6 +40,7 @@ def get_dists(pkg: PackageObject, opt_dict: Optional[dict] = None) -> dict:
             continue
         distributions[num+1] = {
             "filename": url.filename,
+            "download_url": url.url,
             "dist_type": "bdist_wheel",
             "build": _match.group("build"),
             "python_tags": _match.group("python_tags"),
@@ -73,7 +69,7 @@ def get_dists(pkg: PackageObject, opt_dict: Optional[dict] = None) -> dict:
 def _download(url: str, dest: str) -> None:
     """Download a binary file from a given URL. Do not use this function directly."""
     # download file and store bytes
-    msg_board["_download"]["status"] = -1
+    msg_board["_download"]["status"] = 2
     request_obj = urlopen(url)
     f = open(dest + '.part', "wb")
     while True:
@@ -125,43 +121,35 @@ def download_dist(
         except IndexError:
             print(f"No distributions of type '{dist_type}' found for {pkg.release_name}", file=sys.stderr)
             raise SystemExit(1)
+    elif not len(dists):
+        # rare, but might as well cover it
+        print(f"No distributions found for {pkg.release_name}", file=sys.stderr)
+        return -1
     else: # if only one distribution is available, no need to manually select it
         dl_number = 1
 
     # search for requested distribution type in pkg.urls
     # and download distribution
-    success = False
-    for url in pkg.urls:
-        if url.filename == dists[dl_number]["filename"]:
-            if dest is None:
-                dest = url.filename
+    if dest is None:
+        dest = dists[dl_number]["filename"]
             
-            ### Download distribution from PyPI CDN
-            #
-            # this can possibly be done in a 'safer' manner with async,
-            # but i'm too lazy rn and it doesn't seem like *that* much of
-            # a pressing issue
-            th = threading.Thread(target=_download, args=(url.url, dest))
-            th.start()
-            import time
-            l = ['/', '|', '\\', '-']
+    ### Download distribution from PyPI CDN
+    th = threading.Thread(target=_download, args=(dists[dl_number]["download_url"], dest))
+    th.start()
+    import time
+    l = ['/', '|', '\\', '-']
+    count = 0
+    while th.is_alive():
+        size_read = round(msg_board['_download']['bytes_read']/1.049e+6, 1) if dists[dl_number]["size_measurement"] == "MiB" else round(msg_board['_download']['bytes_read']/1024, 1)
+        print(f"[{l[count]}] [{size_read} / {dists[dl_number]['converted_size']} {dists[dl_number]['size_measurement']}] Downloading {pkg.release_name} ({dists[dl_number]['dist_type']})...", end = "\r")
+        count += 1
+        if count == len(l):
             count = 0
-            while th.is_alive():
-                size_read = round(msg_board['_download']['bytes_read']/1.049e+6, 1) if dists[dl_number]["size_measurement"] == "MiB" else round(msg_board['_download']['bytes_read']/1024, 1)
-                print(f"[{l[count]}] [{size_read} / {dists[dl_number]['converted_size']} {dists[dl_number]['size_measurement']}] Downloading {pkg.release_name} ({dists[dl_number]['dist_type']})...", end = "\r")
-                count += 1
-                if count == len(l):
-                    count = 0
-                time.sleep(0.1)
-            print("\33[2K", end="\r")
-            if msg_board["_download"]["status"] == 0:
-                print(f"Downloaded {pkg.release_name} ({dists[dl_number]['dist_type']}) to {dest}!")
-            else:
-                print(msg_board["_download"]["error"])
-                return msg_board['_download']['status']
-            success = True
-            break
-    if not success:
-        # rare, but might as well cover it
-        print(f"No distributions found for {pkg.release_name}", file=sys.stderr)
-    return int(not success)
+        time.sleep(0.1)
+    print("\33[2K", end="\r")
+    if msg_board["_download"]["status"] == 0:
+        print(f"Downloaded {pkg.release_name} ({dists[dl_number]['dist_type']}) to {dest}!")
+    else:
+        print(msg_board["_download"]["error"])
+        return msg_board['_download']['status']
+    return 0

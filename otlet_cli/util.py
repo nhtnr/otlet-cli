@@ -1,33 +1,30 @@
 import os
-import re
 import sys
 import textwrap
 import argparse
 from datetime import datetime
 from typing import Optional, Tuple
 from otlet.api import PackageObject
-from otlet.packaging.version import parse, etc, Version
+from otlet.packaging.version import parse, Version
 from otlet.markers import DEPENDENCY_ENVIRONMENT_MARKERS
 from . import download, config
 
 
-def _print_releases(args: Optional[argparse.Namespace] = None):
-    package = args.package[0]  # type: ignore
-    _top_version = etc.TopVersion()
-    _bottom_version = etc.BottomVersion()
-    _top_date = datetime.fromisoformat("9999-12-31T23:59:59")
-    _bottom_date = datetime.fromtimestamp(0)
-
-    if args and args.after_version:
+def _print_releases(pkg: PackageObject, args: argparse.Namespace):
+    class BottomVersion(Version):
+        def __init__(self) -> None:
+            super().__init__("0")
+        @property
+        def epoch(self) -> int:
+            return -2
+    if args.after_version:
         _bottom_version = Version(args.after_version[0])
-    if args and args.before_version:
-        _top_version = Version(args.before_version[0])
-    if args and args.after_date:
-        _bottom_date = datetime.fromisoformat(args.after_date[0] + "T23:59:59")
-    if args and args.before_date:
-        _top_date = datetime.fromisoformat(args.before_date[0] + "T23:59:59")
+    else:
+        _bottom_version = BottomVersion()
+    _top_version = Version(args.before_version[0])
+    _bottom_date = datetime.fromisoformat(args.after_date[0] + "T23:59:59")
+    _top_date = datetime.fromisoformat(args.before_date[0] + "T23:59:59")
 
-    pkg = PackageObject(package)
     for rel, obj in pkg.releases.items():
         _rel = parse(rel)
         if _top_version < _rel or _bottom_version > _rel:
@@ -128,7 +125,7 @@ def _print_notices(pkg: PackageObject):
         else:
             color = "\u001b[33m"
         print(
-            f"\t\u001b[37m- This version has \u001b[1m{color}{VCOUNT}\u001b[0m\u001b[37m known security vulnerabilities.\n\t\t\u001b[37;1m- These can be viewed with the \"--vulns\" flag.\u001b[0m"
+            f"\t\u001b[37m- This version has \u001b[1m{color}{VCOUNT}\u001b[0m\u001b[37m known security vulnerabilities.\n\t\t\u001b[37;1m- These can be viewed with the \"-r\" flag.\u001b[0m"
         )
         count += 1
     if pkg.info.yanked:
@@ -158,7 +155,7 @@ def check_args(args: argparse.Namespace) -> Tuple[PackageObject, int]:
 
     if args.subparsers:
         if "releases" in sys.argv:
-            code = _print_releases(args)
+            code = _print_releases(pk_object, args)
         if "download" in sys.argv:
             if args.list_whls:
                 code = _print_distributions(pk_object, dist_type=args.dist_type, opt_dict=args.whl_options)
@@ -190,6 +187,5 @@ def check_args(args: argparse.Namespace) -> Tuple[PackageObject, int]:
 def verbose_print(msg: str) -> None:
     if config["verbose"]:
         print(msg, file=sys.stderr)
-    return
 
 __all__ = ["check_args"]

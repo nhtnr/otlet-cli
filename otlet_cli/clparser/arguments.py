@@ -2,7 +2,7 @@ from typing import Dict, Any
 from .actions import OtletVersionAction, OtletWheelDownloadOptsAction
 
 VERBOSE_ARGUMENT: Dict[str, Any] = {
-    "opts": ["--verbose"],
+    "opts": ["-v", "--verbose"],
     "help": "be verbose",
     "action": "store_true"
 }
@@ -36,17 +36,17 @@ ARGUMENT_LIST: Dict[str, Any] = {
         "action": "store_true",
     },
     "urls": {
-        "opts": ["--urls"],
+        "opts": ["-u", "--urls"],
         "help": "print list of all relevant URLs for package",
         "action": "store_true",
     },
     "vulnerabilities": {
-        "opts": ["--vulns", "--vulnerabilities"],
+        "opts": ["-r", "--vulnerabilities"],
         "help": "print information about known vulnerabilities for package release version",
         "action": "store_true",
     },
     "version": {
-        "opts": ["-v", "--version"],
+        "opts": ["-V", "--version"],
         "help": "print version and exit",
         "action": OtletVersionAction,
     },
@@ -63,6 +63,7 @@ RELEASES_ARGUMENT_LIST: Dict[str, Any] = {
         "opts": ["-bd", "--before-date"],
         "metavar": ("DATE"),
         "help": "Return releases before specified date (YYYY-MM-DD)",
+        "default": ["9999-12-31"],
         "nargs": 1,
         "action": "store",
     },
@@ -70,6 +71,7 @@ RELEASES_ARGUMENT_LIST: Dict[str, Any] = {
         "opts": ["-ad", "--after-date"],
         "metavar": ("DATE"),
         "help": "Return releases after specified date (YYYY-MM-DD)",
+        "default": ["1970-01-01"],
         "nargs": 1,
         "action": "store",
     },
@@ -77,6 +79,7 @@ RELEASES_ARGUMENT_LIST: Dict[str, Any] = {
         "opts": ["-bv", "--before-version"],
         "metavar": ("VERSION"),
         "help": "Return releases before specified version",
+        "default": ["100!0"],
         "nargs": 1,
         "action": "store",
     },

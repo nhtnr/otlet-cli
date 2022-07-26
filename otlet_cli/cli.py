@@ -34,7 +34,6 @@ import arrow
 from otlet import exceptions
 from otlet.api import PackageDependencyObject
 from otlet.markers import DEPENDENCY_ENVIRONMENT_MARKERS
-from otlet.packaging.version import InvalidVersion
 
 from . import util, __version__, config
 from .clparser.options import OtletArgumentParser
