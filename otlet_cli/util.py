@@ -14,9 +14,11 @@ def _print_releases(pkg: PackageObject, args: argparse.Namespace):
     class BottomVersion(Version):
         def __init__(self) -> None:
             super().__init__("0")
+
         @property
         def epoch(self) -> int:
             return -2
+
     if args.after_version:
         _bottom_version = Version(args.after_version[0])
     else:
@@ -40,7 +42,13 @@ def _print_releases(pkg: PackageObject, args: argparse.Namespace):
 
     return 0
 
-def _print_distributions(pkg: PackageObject, distributions: Optional[dict]=None, dist_type: Optional[str]=None, opt_dict: Optional[dict]=None):
+
+def _print_distributions(
+    pkg: PackageObject,
+    distributions: Optional[dict] = None,
+    dist_type: Optional[str] = None,
+    opt_dict: Optional[dict] = None,
+):
     if distributions is None:
         distributions = download.get_dists(pkg, opt_dict)
     if not distributions:
@@ -53,7 +61,7 @@ def _print_distributions(pkg: PackageObject, distributions: Optional[dict]=None,
             f"Wheels available for {pkg.release_name}:\n"
             "\n[num] [size]\t[build] | [python_tag] | [abi_tag] | [platform_tag]"
         )
-        for num,whl in distributions.items():
+        for num, whl in distributions.items():
             if whl["dist_type"] != "bdist_wheel":
                 continue
             print(
@@ -64,15 +72,17 @@ def _print_distributions(pkg: PackageObject, distributions: Optional[dict]=None,
             last_num += 1
         print()
 
-    if len(distributions) > last_num and dist_type != "bdist_wheel": 
-        # only do this part if non-wheel distributions are available, 
+    if len(distributions) > last_num and dist_type != "bdist_wheel":
+        # only do this part if non-wheel distributions are available,
         # or non-wheel dist_type is requested
         print(
             f"'{dist_type if dist_type else 'Other'}' distributions available for {pkg.release_name}:\n"
             "\n[num] [size]\t[distribution_type] | [filename]"
         )
         for num, dist in distributions.items():
-            if dist["dist_type"] == "bdist_wheel" or (dist_type and dist["dist_type"] != dist_type):
+            if dist["dist_type"] == "bdist_wheel" or (
+                dist_type and dist["dist_type"] != dist_type
+            ):
                 continue
             print(
                 f"\u2500\u2500\u2500\u2500\u2500\n{num} "
@@ -82,6 +92,7 @@ def _print_distributions(pkg: PackageObject, distributions: Optional[dict]=None,
 
     print()
     return 0
+
 
 def _print_vulns(pkg: PackageObject):
     if pkg.vulnerabilities is None:
@@ -125,7 +136,7 @@ def _print_notices(pkg: PackageObject):
         else:
             color = "\u001b[33m"
         print(
-            f"\t\u001b[37m- This version has \u001b[1m{color}{VCOUNT}\u001b[0m\u001b[37m known security vulnerabilities.\n\t\t\u001b[37;1m- These can be viewed with the \"-r\" flag.\u001b[0m"
+            f'\t\u001b[37m- This version has \u001b[1m{color}{VCOUNT}\u001b[0m\u001b[37m known security vulnerabilities.\n\t\t\u001b[37;1m- These can be viewed with the "-r" flag.\u001b[0m'
         )
         count += 1
     if pkg.info.yanked:
@@ -158,7 +169,9 @@ def check_args(args: argparse.Namespace) -> Tuple[PackageObject, int]:
             code = _print_releases(pk_object, args)
         if "download" in sys.argv:
             if args.list_whls:
-                code = _print_distributions(pk_object, dist_type=args.dist_type, opt_dict=args.whl_options)
+                code = _print_distributions(
+                    pk_object, dist_type=args.dist_type, opt_dict=args.whl_options
+                )
             else:
                 code = download.download_dist(
                     pk_object, args.dest, args.dist_type, args.whl_options
@@ -184,8 +197,10 @@ def check_args(args: argparse.Namespace) -> Tuple[PackageObject, int]:
         code = _print_notices(pk_object)
     return (pk_object, code)
 
+
 def verbose_print(msg: str) -> None:
     if config["verbose"]:
         print(msg, file=sys.stderr)
+
 
 __all__ = ["check_args"]

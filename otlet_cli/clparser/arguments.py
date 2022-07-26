@@ -4,7 +4,7 @@ from .actions import OtletVersionAction, OtletWheelDownloadOptsAction
 VERBOSE_ARGUMENT: Dict[str, Any] = {
     "opts": ["-v", "--verbose"],
     "help": "be verbose",
-    "action": "store_true"
+    "action": "store_true",
 }
 
 PACKAGE_ARGUMENT: Dict[str, Any] = {
@@ -100,7 +100,7 @@ DOWNLOAD_ARGUMENTS_LIST: Dict[str, Any] = {
         "nargs": "?",
         "action": "store",
     },
-    "whl_options":{
+    "whl_options": {
         "opts": ["-w", "--whl-options"],
         "action": OtletWheelDownloadOptsAction,
     },
