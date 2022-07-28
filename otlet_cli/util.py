@@ -10,28 +10,32 @@ from otlet.markers import DEPENDENCY_ENVIRONMENT_MARKERS
 from . import download, config
 
 
-def _print_releases(pkg: PackageObject, args: argparse.Namespace):
+def print_releases(pkg: PackageObject, args: argparse.Namespace):
+    verbose_print(print_releases, "Printing all available releases matching the following criteria:")
     class BottomVersion(Version):
         def __init__(self) -> None:
             super().__init__("0")
-
         @property
         def epoch(self) -> int:
             return -2
 
     if args.after_version:
-        _bottom_version = Version(args.after_version[0])
+        bottom_version = Version(args.after_version[0])
     else:
-        _bottom_version = BottomVersion()
-    _top_version = Version(args.before_version[0])
-    _bottom_date = datetime.fromisoformat(args.after_date[0] + "T23:59:59")
-    _top_date = datetime.fromisoformat(args.before_date[0] + "T23:59:59")
+        bottom_version = BottomVersion()
+    verbose_print(print_releases, f"after version: {bottom_version}")
+    top_version = Version(args.before_version[0])
+    verbose_print(print_releases, f"before version: {top_version}")
+    bottom_date = datetime.fromisoformat(args.after_date[0] + "T23:59:59")
+    verbose_print(print_releases, f"after date: {bottom_date}")
+    top_date = datetime.fromisoformat(args.before_date[0] + "T00:00:00")
+    verbose_print(print_releases, f"before date: {top_date}")
 
     for rel, obj in pkg.releases.items():
         _rel = parse(rel)
-        if _top_version < _rel or _bottom_version > _rel:
+        if top_version <= _rel or bottom_version >= _rel:
             continue
-        if _top_date < obj.upload_time or _bottom_date > obj.upload_time:
+        if top_date < obj.upload_time or bottom_date > obj.upload_time:
             continue
 
         text = f"({obj.upload_time.date()}) {rel}"
@@ -43,13 +47,14 @@ def _print_releases(pkg: PackageObject, args: argparse.Namespace):
     return 0
 
 
-def _print_distributions(
+def print_distributions(
     pkg: PackageObject,
     distributions: Optional[dict] = None,
     dist_type: Optional[str] = None,
     opt_dict: Optional[dict] = None,
 ):
     if distributions is None:
+        verbose_print(print_distributions, "No distribution list supplied. Running download.get_dists()")
         distributions = download.get_dists(pkg, opt_dict)
     if not distributions:
         print(f"No distributions found for {pkg.release_name}", file=sys.stderr)
@@ -94,7 +99,7 @@ def _print_distributions(
     return 0
 
 
-def _print_vulns(pkg: PackageObject):
+def print_vulns(pkg: PackageObject):
     if pkg.vulnerabilities is None:
         print("\u001b[32mNo vulnerabilities found for this release! :)\u001b[0m")
         return 0
@@ -126,7 +131,7 @@ def _print_vulns(pkg: PackageObject):
     return 0
 
 
-def _print_notices(pkg: PackageObject):
+def print_notices(pkg: PackageObject):
     print(f"Notices for package '{pkg.release_name}':\n")
     count = 0
     if pkg.vulnerabilities:
@@ -159,6 +164,7 @@ def _print_notices(pkg: PackageObject):
 
 def check_args(args: argparse.Namespace) -> Tuple[PackageObject, int]:
     code = 2
+    verbose_print(check_args, "Fetching package data from PyPI/Warehouse")
     if "releases" in sys.argv or args.package_version == "stable":
         pk_object = PackageObject(args.package[0])
     else:
@@ -166,21 +172,26 @@ def check_args(args: argparse.Namespace) -> Tuple[PackageObject, int]:
 
     if args.subparsers:
         if "releases" in sys.argv:
-            code = _print_releases(pk_object, args)
+            verbose_print(check_args, "Running print_releases()")
+            code = print_releases(pk_object, args)
         if "download" in sys.argv:
             if args.list_whls:
-                code = _print_distributions(
+                verbose_print(check_args, "Running print_distributions()")
+                code = print_distributions(
                     pk_object, dist_type=args.dist_type, opt_dict=args.whl_options
                 )
             else:
+                verbose_print(check_args, "Running download.download_dist()")
                 code = download.download_dist(
                     pk_object, args.dest, args.dist_type, args.whl_options
                 )
     elif args.vulnerabilities:
         # List all known vulnerabilities for a release.
-        code = _print_vulns(pk_object)
+        verbose_print(check_args, "Running print_vulns()")
+        code = print_vulns(pk_object)
     elif args.urls:
         # List all available URLs for a release.
+        verbose_print(check_args, "Printing all available URLs for package")
         if pk_object.info.project_urls is None:
             print(f"No URLs available for {pk_object.release_name}")
         else:
@@ -189,18 +200,20 @@ def check_args(args: argparse.Namespace) -> Tuple[PackageObject, int]:
         code = 0
     elif args.list_extras:
         # List all allowable extras for a release.
+        verbose_print(check_args, "Printing all available extras for package")
         print(f"Allowable extras for '{pk_object.release_name}' are:")
         for extra in pk_object.info.possible_extras:
             print(f"\t- {pk_object.canonicalized_name}[{extra}]")
         code = 0
     elif args.notices:
-        code = _print_notices(pk_object)
+        verbose_print(check_args, "Running print_notices()")
+        code = print_notices(pk_object)
     return (pk_object, code)
 
 
-def verbose_print(msg: str) -> None:
+def verbose_print(calling_function, msg: str) -> None:
     if config["verbose"]:
-        print(msg, file=sys.stderr)
+        print(f"\u001b[38;5;245m[{calling_function.__name__}(): {hex(id(calling_function))}]", msg, "\u001b[0m", file=sys.stderr)
 
 
 __all__ = ["check_args"]

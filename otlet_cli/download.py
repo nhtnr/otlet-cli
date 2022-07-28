@@ -1,6 +1,7 @@
 import re
 import os
 import sys
+import time
 from hashlib import md5
 from urllib.request import urlopen
 from typing import Optional
@@ -23,6 +24,7 @@ msg_board = {"_download": {"bytes_read": 0}}
 
 
 def get_dists(pkg: PackageObject, opt_dict: Optional[dict] = None) -> dict:
+    util.verbose_print(get_dists, f"Generating list of distributions, matching given criteria: {opt_dict}")
     distributions = {}
     for num, url in enumerate(pkg.urls):
         _match = WHLRGX.match(url.filename)
@@ -54,6 +56,7 @@ def get_dists(pkg: PackageObject, opt_dict: Optional[dict] = None) -> dict:
     if not opt_dict:
         return distributions
 
+    util.verbose_print(get_dists, "Removing packages not matching given criteria")
     for key, dist in distributions.copy().items():
         if dist["dist_type"] != "bdist_wheel":  # ignore non-wheels for obvious reasons
             continue
@@ -75,6 +78,7 @@ def get_dists(pkg: PackageObject, opt_dict: Optional[dict] = None) -> dict:
 def _download(url: str, dest: str) -> None:
     """Download a binary file from a given URL. Do not use this function directly."""
     # download file and store bytes
+    util.verbose_print(_download, "Beginning download...")
     msg_board["_download"]["status"] = 2
     request_obj = urlopen(url)
     f = open(dest + ".part", "wb")
@@ -84,9 +88,11 @@ def _download(url: str, dest: str) -> None:
             break
         f.write(j)
         msg_board["_download"]["bytes_read"] += 1024 * 3
+    util.verbose_print(_download, "File written successfully. Closing.")
     f.close()
 
     # enforce that we downloaded the correct file, and no corruption took place
+    util.verbose_print(_download, "Performing MD5 hash verification on downloaded file.")
     with open(dest + ".part", "rb") as f:
         data_hash = md5(f.read()).hexdigest()
     cloud_hash = request_obj.headers["ETag"].strip('"')
@@ -98,6 +104,7 @@ def _download(url: str, dest: str) -> None:
         return
 
     os.rename(dest + ".part", dest)  # remove temp tag
+    util.verbose_print(_download, "Download finished successfully. Killing thread.")
     msg_board["_download"]["status"] = 0
 
 
@@ -109,6 +116,8 @@ def download_dist(
     """
 
     # get distributions and ask for user selection
+    util.verbose_print(download_dist, f"dist_type: {dist_type}")
+    util.verbose_print(download_dist, "Running function get_dists()")
     dists = get_dists(pkg, opt_dict)
     dist_types = [x for x in dists.items() if x[1]["dist_type"] == dist_type]
     dist_type_count = len(dist_types)
@@ -120,9 +129,9 @@ def download_dist(
                 break
             except ValueError:
                 print("ERROR: Value must be an integer...", file=sys.stderr)
-    elif (
-        dist_type
-    ):  # fall here if dist_type is given, and only one distribution for dist_type exists, i.e. 'sdist'
+    elif dist_type:
+        # fall here if dist_type is given, and only one distribution for dist_type exists, i.e. 'sdist'
+        util.verbose_print(download_dist, f"Only one distribution detected matching the criteria, skipping menu")
         try:
             dl_number = dist_types[0][0]
         except IndexError:
@@ -136,6 +145,7 @@ def download_dist(
         print(f"No distributions found for {pkg.release_name}", file=sys.stderr)
         return -1
     else:  # if only one distribution is available, no need to manually select it
+        util.verbose_print(download_dist, f"Only one distribution detected matching the criteria, skipping menu")
         dl_number = 1
 
     # search for requested distribution type in pkg.urls
@@ -144,12 +154,12 @@ def download_dist(
         dest = dists[dl_number]["filename"]
 
     ### Download distribution from PyPI CDN
+    util.verbose_print(download_dist, "Creating new thread")
     th = threading.Thread(
         target=_download, args=(dists[dl_number]["download_url"], dest)
     )
+    util.verbose_print(download_dist, f"Spinning up new thread ({th.name}, {th.ident}) to perform download")
     th.start()
-    import time
-
     l = ["/", "|", "\\", "-"]
     count = 0
     while th.is_alive():

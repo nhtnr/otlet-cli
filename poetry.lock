@@ -157,11 +157,11 @@ python-versions = "*"
 
 [[package]]
 name = "otlet"
-version = "1.0.0rc5"
+version = "1.0.0rc7"
 description = "Zero-dependency, pure-python wrapper for the PyPI JSON Web API"
 category = "main"
 optional = false
-python-versions = ">=3.6,<4.0"
+python-versions = ">=3.6.2,<4.0"
 
 [package.extras]
 docs = ["Sphinx (>=4.5.0,<5.0.0)", "sphinx-rtd-theme (>=1.0.0,<2.0.0)"]
@@ -398,8 +398,8 @@ mypy-extensions = [
     {file = "mypy_extensions-0.4.3.tar.gz", hash = "sha256:2d82818f5bb3e369420cb3c4060a7970edba416647068eb4c5343488a6c604a8"},
 ]
 otlet = [
-    {file = "otlet-1.0.0rc5-py3-none-any.whl", hash = "sha256:ce66440d340f532fc46f3eaeb940816b0fe6748c0c484114371dcb583636df7c"},
-    {file = "otlet-1.0.0rc5.tar.gz", hash = "sha256:f7bc1290ead1b4a85704359b46e7344b85c9e3c42900356e3d2f958711f956ba"},
+    {file = "otlet-1.0.0rc6-py3-none-any.whl", hash = "sha256:133bd5aba559b63ebc85ef5e8b1b0c7ddfc94c2522684024be448816e49b3ace"},
+    {file = "otlet-1.0.0rc6.tar.gz", hash = "sha256:ef677bf886ed10ed510ee7d11f3f6ff1904f6d64fce4f9620122f0fc3f3bfede"},
 ]
 pathspec = [
     {file = "pathspec-0.9.0-py2.py3-none-any.whl", hash = "sha256:7d15c4ddb0b5c802d161efc417ec1a2558ea2653c2e8ad9c19098201dc1c993a"},

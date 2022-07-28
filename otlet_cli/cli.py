@@ -43,12 +43,6 @@ def init_args() -> Optional[Namespace]:
     parser = OtletArgumentParser()
 
     args = parser.parse_args()
-    if not args.package:
-        print(
-            "Please supply a package to search for: i.e. 'otlet sampleproject'",
-            file=sys.stderr,
-        )
-        return None
     if parser.__dict__.get("subparsers"):
         args.__dict__["subparsers"] = []
         for s in parser.__dict__.get("subparsers").choices:
@@ -58,6 +52,8 @@ def init_args() -> Optional[Namespace]:
         args.__dict__["subparsers"] = []
 
     config["verbose"] = args.verbose
+    util.verbose_print(init_args, "Command line arguments successfully parsed.")
+    util.verbose_print(init_args, args.__dict__)
     return args
 
 
@@ -67,23 +63,25 @@ def main():
         signal.SIGINT, lambda *_: (_ for _ in ()).throw(SystemExit(0))
     )  # no yucky exception on KeyboardInterrupt (^C)
     args = init_args()
-    if not args:
-        return 1
     try:
+        util.verbose_print(main, "Running util.check_args()")
         pkg, check_return = util.check_args(args)
         if check_return != 2:
+            util.verbose_print(main, "util.check_args() returned a non-two code, exiting otlet.")
             return check_return
     except exceptions.PyPIAPIError as err:
         print("otlet: " + str(err), file=sys.stderr)
         return 1
 
     def generate_release_date(dto) -> str:
+        util.verbose_print(generate_release_date, "Humanizing PackageObject.upload_time value")
         if dto:
             ar_date = arrow.get(dto).to("local")
             return f"{ar_date.humanize()} ({ar_date.strftime('%Y-%m-%d at %H:%M')})"
         return "Unknown"
 
     def generate_dep_list(deps: List[PackageDependencyObject]) -> str:
+        util.verbose_print(generate_dep_list, "Generating formatted list of package dependencies")
         dstr = ""
         if not deps:
             return dstr
@@ -95,6 +93,7 @@ def main():
         return dstr
 
     def get_notice_count():
+        util.verbose_print(get_notice_count, f"Checking for any notices on {pkg.release_name}")
         count = 0
         if pkg.vulnerabilities:
             count += 1
@@ -109,6 +108,7 @@ def main():
             return f"\n\u001b[33;1;3m**{count}**\u001b[0m\u001b[33m notice(s) for this release.\n    - Use '--notices' for more information\u001b[0m\n"
         return ""
 
+    util.verbose_print(main, f"Generating formatted package information for {pkg.release_name}")
     msg = textwrap.dedent(
         f"""Info for package {pkg.release_name}
 {get_notice_count()}
@@ -137,6 +137,5 @@ def run_cli():
             file=sys.stderr,
         )
         raise SystemExit(1)
-    if code != 0:
-        util.verbose_print(f"Otlet failed with exit code: {code}")
+    util.verbose_print(run_cli, f"Exiting with code {code}")
     raise SystemExit(code)
