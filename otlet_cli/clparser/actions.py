@@ -25,7 +25,7 @@ class OtletWheelDownloadOptsAction(Action):
     def __call__(self, parser, namespace, values, option_string):
         # create dictionary for user-desired options pattern matching
         acceptable_options = ["build", "python_tags", "abi_tags", "platform_tags"]
-        STAR = "(?:\S+)"
+        STAR = "(?:.*)"
         opt_dict = {}
         for i in values.split(","):
             opt_match = re.match(r"(\S+):(\S+)", i)
