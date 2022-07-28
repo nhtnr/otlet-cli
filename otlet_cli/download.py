@@ -14,10 +14,10 @@ from . import util
 WHLRGX = re.compile(
     r"(?P<project>[A-Za-z0-9](?:[A-Za-z0-9._]*[A-Za-z0-9])?)"
     r"-(?P<version>[A-Za-z0-9_.!+]+)"
-    r"(?:-(?P<build>[0-9][\w\d.]*))?"
-    r"-(?P<python_tags>[\w\d]+(?:\.[\w\d]+)*)"
-    r"-(?P<abi_tags>[\w\d]+(?:\.[\w\d]+)*)"
-    r"-(?P<platform_tags>[\w\d]+(?:\.[\w\d]+)*)"
+    r"(?:-(?P<build_tag>[0-9][\w\d.]*))?"
+    r"-(?P<python_tag>[\w\d]+(?:\.[\w\d]+)*)"
+    r"-(?P<abi_tag>[\w\d]+(?:\.[\w\d]+)*)"
+    r"-(?P<platform_tag>[\w\d]+(?:\.[\w\d]+)*)"
     r"\.[Ww][Hh][Ll]"
 )
 msg_board = {"_download": {"bytes_read": 0}}
@@ -43,10 +43,10 @@ def get_dists(pkg: PackageObject, opt_dict: Optional[dict] = None) -> dict:
             "filename": url.filename,
             "download_url": url.url,
             "dist_type": "bdist_wheel",
-            "build": _match.group("build"),
-            "python_tags": _match.group("python_tags"),
-            "abi_tags": _match.group("abi_tags"),
-            "platform_tags": _match.group("platform_tags"),
+            "build_tag": _match.group("build_tag"),
+            "python_tag": _match.group("python_tag"),
+            "abi_tag": _match.group("abi_tag"),
+            "platform_tag": _match.group("platform_tag"),
             "converted_size": round(url.size / 1.049e6, 1)
             if url.size > 1048576
             else round(url.size / 1024, 1),

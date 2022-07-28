@@ -11,7 +11,7 @@ class OtletWheelDownloadOptsAction(Action):
         option_strings,
         dest=SUPPRESS,
         default=None,
-        help="supply options for which wheels to show, i.e. 'python_tags:cp39' to only show wheels with the 'cp39' attribute for 'python_tags'",
+        help="supply options for which wheels to show, i.e. 'python_tag:cp39' to only show wheels with the 'cp39' attribute for 'python_tag'",
     ):
         super().__init__(
             option_strings=option_strings,
@@ -24,7 +24,7 @@ class OtletWheelDownloadOptsAction(Action):
 
     def __call__(self, parser, namespace, values, option_string):
         # create dictionary for user-desired options pattern matching
-        acceptable_options = ["build", "python_tags", "abi_tags", "platform_tags"]
+        acceptable_options = ["build_tag", "python_tag", "abi_tag", "platform_tag"]
         STAR = "(?:.*)"
         opt_dict = {}
         for i in values.split(","):

@@ -72,7 +72,7 @@ def print_distributions(
             print(
                 f"\u2500\u2500\u2500\u2500\u2500\n{num} "
                 f"({whl['converted_size']} {whl['size_measurement']})"
-                f"\t{whl['build']} | {whl['python_tags']} | {whl['abi_tags']} | {whl['platform_tags']}"
+                f"\t{whl['build_tag']} | {whl['python_tag']} | {whl['abi_tag']} | {whl['platform_tag']}"
             )
             last_num += 1
         print()
