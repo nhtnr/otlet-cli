@@ -109,12 +109,19 @@ def _download(url: str, dest: str) -> None:
 
 
 def download_dist(
-    pkg: PackageObject, dest: str, dist_type: str, opt_dict: Optional[dict] = None
+    pkg: PackageObject, 
+    dest: Optional[str] = None, 
+    dist_type: Optional[str] = None, 
+    opt_dict: Optional[dict] = None
 ) -> int:
     """
     Download a specified package's distribution file.
     """
 
+    if opt_dict: 
+        # we can go ahead and safely override dist_type to bdist_wheel 
+        # because that is the only time we would have an opt_dict
+        dist_type = "bdist_wheel"
     # get distributions and ask for user selection
     util.verbose_print(download_dist, f"dist_type: {dist_type}")
     util.verbose_print(download_dist, "Running function get_dists()")
@@ -136,7 +143,7 @@ def download_dist(
             dl_number = dist_types[0][0]
         except IndexError:
             print(
-                f"No distributions of type '{dist_type}' found for {pkg.release_name}",
+                f"No distributions found for {pkg.release_name}, matching the given criteria.",
                 file=sys.stderr,
             )
             raise SystemExit(1)
