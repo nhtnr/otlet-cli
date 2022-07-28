@@ -24,6 +24,7 @@ CLI tool for returning PyPI package information, using the otlet wrapper
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
 # OR OTHER DEALINGS IN THE SOFTWARE.
 
+import os
 import sys
 import signal
 import textwrap
@@ -38,6 +39,12 @@ from otlet.markers import DEPENDENCY_ENVIRONMENT_MARKERS
 from . import util, __version__, config
 from .clparser.options import OtletArgumentParser
 
+if os.name == "nt":
+    # if running on windows, ANSI escape codes for coloring
+    # need to be manually enabled.
+    from ctypes import windll
+    k = windll.kernel32
+    k.SetConsoleMode(k.GetStdHandle(-11), 7)
 
 def init_args() -> Optional[Namespace]:
     parser = OtletArgumentParser()
