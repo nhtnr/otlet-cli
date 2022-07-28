@@ -122,7 +122,7 @@ def download_dist(
     dist_types = [x for x in dists.items() if x[1]["dist_type"] == dist_type]
     dist_type_count = len(dist_types)
     if any((not dist_type, dist_type_count > 1)) and len(dists) > 1:
-        util._print_distributions(pkg, dists, dist_type)
+        util.print_distributions(pkg, dists, dist_type)
         while True:
             try:
                 dl_number = int(input("Specify a number to download: "))
