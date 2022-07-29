@@ -48,15 +48,7 @@ if os.name == "nt":
 
 def init_args() -> Optional[Namespace]:
     parser = OtletArgumentParser()
-
     args = parser.parse_args()
-    if parser.__dict__.get("subparsers"):
-        args.__dict__["subparsers"] = []
-        for s in parser.__dict__.get("subparsers").choices:
-            args.__dict__["subparsers"].append(s)
-
-    else:
-        args.__dict__["subparsers"] = []
 
     config["verbose"] = args.verbose
     util.verbose_print(init_args, "Command line arguments successfully parsed.")

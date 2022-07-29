@@ -170,21 +170,20 @@ def check_args(args: argparse.Namespace) -> Tuple[PackageObject, int]:
     else:
         pk_object = PackageObject(args.package[0], args.package_version)
 
-    if args.subparsers:
-        if "releases" in sys.argv:
-            verbose_print(check_args, "Running print_releases()")
-            code = print_releases(pk_object, args)
-        if "download" in sys.argv:
-            if args.list_whls:
-                verbose_print(check_args, "Running print_distributions()")
-                code = print_distributions(
-                    pk_object, dist_type=args.dist_type, opt_dict=args.whl_options
-                )
-            else:
-                verbose_print(check_args, "Running download.download_dist()")
-                code = download.download_dist(
-                    pk_object, args.dest, args.dist_type, args.whl_options
-                )
+    if "releases" in sys.argv:
+        verbose_print(check_args, "Running print_releases()")
+        code = print_releases(pk_object, args)
+    elif "download" in sys.argv:
+        if args.list_whls:
+            verbose_print(check_args, "Running print_distributions()")
+            code = print_distributions(
+                pk_object, dist_type=args.dist_type, opt_dict=args.whl_options
+            )
+        else:
+            verbose_print(check_args, "Running download.download_dist()")
+            code = download.download_dist(
+                pk_object, args.dest, args.dist_type, args.whl_options
+            )
     elif args.vulnerabilities:
         # List all known vulnerabilities for a release.
         verbose_print(check_args, "Running print_vulns()")
