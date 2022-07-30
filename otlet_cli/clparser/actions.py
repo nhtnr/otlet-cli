@@ -28,7 +28,7 @@ class OtletWheelDownloadOptsAction(Action):
         STAR = "(?:.*)"
         opt_dict = {}
         for i in values.split(","):
-            opt_match = re.match(r"(\S+):(\S+)", i)
+            opt_match = re.match(r"(?:\s)?(\S+):(\S+)", i)
             opt_value = re.compile(opt_match.group(2).replace("*", STAR))
             if opt_match.group(1) not in acceptable_options:
                 print(f"error: unrecognized option '{opt_match.group(1)}'. ignoring...")
